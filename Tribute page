@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="main">
+      <h1 id="title">Jordan Bester</h1>
+      <p>The man who made joliet a smart city(period)</p>
+      <figure id="img-div">
+        <img
+          id="image"
+          src="https://media-exp1.licdn.com/dms/image/C4E03AQFVgYE6-tU40w/profile-displayphoto-shrink_200_200/0/1634819101002?e=2147483647&v=beta&t=2NlMdAj8Bwwug8DygvAZfBrht0VGtHuTimUhKP4jRnI"
+          alt="Dr. Jordan Bester active!"
+        />
+        <figcaption id="img-caption">
+          Dr. Jordan Bester, active!
+        </figcaption>
+      </figure>
+      <section id="tribute-info">
+        <h3 id="headline">Here's a time line of Dr. Bester's life:</h3>
+        <ul>
+          <li><strong>1992</strong> - Born in Joliet, Illinois </li>
+          <li>
+            <strong>2010</strong> - Leaves Joliet to Win big and put his team on. 
+          </li>
+          <li>
+             <strong>2012</strong> - Joins Kappa Alpha Psi. 
+          </li>
+          <li>
+            <strong>2014 </strong> - Graduates College and jumps right into corporate america. Working for various startup companies. 
+          </li>
+          <li>
+            <strong>2020</strong> - Ups and downs come along but Jordan and team create WAGU studios. 
+            <li> <strong>2024</strong> 
+          -  Wagu becomes a 25 million dollar brand</li> 
+          <li>
+            <strong>2025</strong> - Jordan was named 40 under 40 for his philanthropic work and many wins. 
+          </li>
+          <li>
+            <strong>2027 </strong> - Jordan and his wife welcome their twins and move away to California.
+          </li>
+          <li>
+            <strong>2028</strong> - Rejects a 100 Million dollar buyout of club2053 from apple. Says he holding out for a billi. Over 100 artist from the network win the following awards: 
+            Grammys'
+            Emmys'
+            Sundace Film Festival 
+            Olympic Gold Medalists
+            Pultzer Prize 
+            Humanitarian.
+          </li>
+          <li>
+            <strong>2045</strong> - Goes back to Joliet to become Mayor of the city! During this time Joliet is in bad shape. Crime, pollution etc.
+          </li>
+          <li>
+            <strong>2047</strong> - Jordan and his team have turn Joliet all the way around! 
+          </li>
+          <li>
+            <strong>2049</strong> - Joliet gets voted as the most beautiful city worldwide. Top places to travel on Earth! 
+          </li>
+          <li><strong>2055</strong> - receives the Nobel Peace Prize</li>
+          <li>
+            <strong>2058</strong> - helps African countries with technology agriculuture and electricity. 
+          </li>
+          <li>
+            <strong>2060</strong> - Officially retires and only consults from his Estate. 
+          </li>
+        
+           
+
+        </ul>
+        <blockquote
+       
+          <p>
+            "Jordans' commitment to his family and friends is what kept him going. He credits his contribution to them and most important, choosing the right partner. If it hadn't been for his wife, he'd be lost. "
+
+            <li>
+           "  One thing we can never forget is that failure is just progression to where we want to be" </li> 
+          </p>
+          <cite>-- Someones who has failed time and time again. </cite>
+        </blockquote>
+        <h3>
+          If you have time, you should read more about this incredible human
+          being on his site 
+          <a
+            id="tribute-link"
+            href="https://www.wagustudios.com"
+            target="_blank"
+            >Here</a
+          >.
+        </h3>
+      </section>
+    </main>
+  </body>
+</html>
+
