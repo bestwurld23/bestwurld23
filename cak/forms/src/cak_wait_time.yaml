@@ -1,0 +1,95 @@
+# XLSForm source for cak_wait_time (PRD §7.2). Apache-2.0.
+#
+# Built into forms/dist/cak_wait_time.xlsx by forms/build.py. The YAML is the
+# reviewable source of truth; the spreadsheet is the artifact KoBo and ODK
+# import. Reviewing a diff of a binary xlsx is not review.
+settings:
+  form_title: Polling site wait time
+  form_id: cak_wait_time
+  version: "2026091201"
+  default_language: English (en)
+  # Personal data is not collected, so there is nothing to encrypt and nothing
+  # to leak. The absence of a public_key line here is deliberate.
+
+survey:
+  - type: note
+    name: intro
+    label: |
+      Report how long the line is at a voting site.
+
+      Do not record anyone's name. Do not photograph faces.
+      This is an observation, not an official record.
+
+  - type: select_one sites
+    name: site_id
+    label: Which site?
+    required: true
+    appearance: minimal
+    hint: From the site list in your locale pack.
+
+  - type: text
+    name: site_other
+    label: Site name, if it is not in the list
+    relevant: ${site_id} = 'other'
+    hint: The building name only. No names of people, and no home addresses.
+
+  - type: dateTime
+    name: observed_at
+    label: When did you observe this?
+    required: true
+    default: now()
+    # Device clocks drift badly on cheap Android handsets and after a battery
+    # pull. A timestamp far from the present is almost always a wrong clock, so
+    # flag it at entry rather than discovering it in analysis.
+    constraint: ". <= now() + duration('PT2H') and . >= now() - duration('P7D')"
+    constraint_message: >-
+      That time looks wrong. Check the phone's clock, then enter it again.
+
+  - type: select_one yes_no
+    name: site_open
+    label: Is the site open right now?
+    required: true
+
+  - type: integer
+    name: line_minutes
+    label: How many minutes is the wait?
+    required: true
+    relevant: ${site_open} = 'yes'
+    constraint: . >= 0 and . <= 480
+    constraint_message: Enter a number of minutes between 0 and 480.
+    hint: Your best estimate. Ask the last person in line if you can.
+
+  - type: integer
+    name: people_count
+    label: Roughly how many people are in line?
+    relevant: ${site_open} = 'yes'
+    constraint: . >= 0 and . <= 5000
+    hint: Optional. An estimate is fine.
+
+  - type: geopoint
+    name: gps
+    label: Location
+    hint: Optional, and only if the device allows it. This locates the site, not you.
+
+  - type: image
+    name: photo
+    label: Photo
+    appearance: annotate
+    hint: >-
+      Optional. No faces. A photo of a sign, a door or an empty line is useful;
+      a photo of people waiting is not, and it records who was there.
+
+  - type: text
+    name: notes
+    label: Anything else?
+    appearance: multiline
+    hint: No names. No phone numbers. No addresses of individuals.
+
+choices:
+  yes_no:
+    - { name: "yes", label: "Yes" }
+    - { name: "no", label: "No" }
+  # The sites list is generated from the locale pack's sites.geojson at build
+  # time, plus an "other" option. A steward who adds a site to the pack rebuilds
+  # the form; they never hand-edit the spreadsheet.
+  sites: from_pack

@@ -1,0 +1,112 @@
+{#
+  How-to-vote card (PRD §9.1). Apache-2.0.
+
+  Every string comes from the locale pack: nothing here is hard-coded English,
+  and nothing here is a claim the pack's official files do not carry. Prints on
+  A5 and 5x7 in, colour or grayscale, and stays legible photocopied.
+#}
+<!doctype html>
+<html lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<title>{{ t('print.howto_title') }} — {{ pack.name }}</title>
+<style>
+  @page { size: {{ page_size }}; margin: 10mm; }
+  :root {
+    --ink: #111111;
+    --rule: #111111;
+    --muted: #3a3a3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  h1 { font-size: 20pt; margin: 0 0 2mm; line-height: 1.15; }
+  h2 { font-size: 13pt; margin: 5mm 0 1mm; text-transform: uppercase; letter-spacing: .04em; }
+  .rule { border-top: 2pt solid var(--rule); margin: 3mm 0; }
+  .row { display: flex; gap: 3mm; align-items: flex-start; margin: 2mm 0; }
+  .icon {
+    flex: 0 0 9mm; height: 9mm; border: 1.5pt solid var(--ink); border-radius: 1.5mm;
+    font-size: 13pt; line-height: 8.5mm; text-align: center; font-weight: 700;
+  }
+  .row div { flex: 1; }
+  .label { font-weight: 700; }
+  .banner {
+    border: 1.5pt solid var(--ink); padding: 2.5mm; font-size: 10pt;
+    margin-top: 4mm; line-height: 1.3;
+  }
+  .office { font-size: 12pt; }
+  .office .big { font-size: 16pt; font-weight: 700; letter-spacing: .01em; }
+  ul { margin: 1mm 0 0 5mm; padding: 0; }
+  li { margin: 0 0 1mm; }
+  .foot { margin-top: 4mm; font-size: 8.5pt; color: var(--muted); }
+  @media print { body { font-size: 12pt; } }
+</style>
+</head>
+<body>
+  <h1>{{ t('print.howto_title') }}</h1>
+  <div class="label">{{ pack.name }}</div>
+  <div class="rule"></div>
+
+  <h2>{{ t('print.where_when') }}</h2>
+  {% if sites %}
+    {% for site in sites %}
+    <div class="row">
+      <div class="icon">📍</div>
+      <div>
+        <span class="label">{{ site.name }}</span><br>
+        {% if site.address_text %}{{ site.address_text }}<br>{% endif %}
+        {% if site.hours %}🕘 {{ site.hours }}{% endif %}
+        {% if site.wheelchair %} · ♿ {{ t('print.wheelchair') }}{% endif %}
+        {% if site.languages %} · 🗣 {{ site.languages | join(', ') }}{% endif %}
+        {% if site.accepts_non_street_address_note %}
+        <br>✉️ {{ site.accepts_non_street_address_note }}
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="row">
+      <div class="icon">📍</div>
+      <div>{{ t('print.no_sites_listed') }}</div>
+    </div>
+  {% endif %}
+
+  <h2>{{ t('print.ask_the_office') }}</h2>
+  <div class="row office">
+    <div class="icon">☎</div>
+    <div>
+      <span class="label">{{ pack.authority.name }}</span><br>
+      {% if pack.authority.phone %}<span class="big">{{ pack.authority.phone }}</span><br>{% endif %}
+      {% if pack.authority.address %}{{ pack.authority.address }}<br>{% endif %}
+      {% if pack.authority.url %}{{ pack.authority.url }}{% endif %}
+    </div>
+  </div>
+
+  {% if sms_enabled %}
+  <h2>{{ t('print.by_text_message') }}</h2>
+  <div class="row">
+    <div class="icon">✉</div>
+    <div>
+      <ul>
+        <li><code>{{ sms.wait_code }} &lt;site&gt; &lt;{{ t('print.minutes') }}&gt;</code></li>
+        <li><code>{{ sms.closed_code }} &lt;site&gt;</code></li>
+        <li><code>{{ sms.help_code }}</code></li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="banner">{{ pack.legal_banner }}</div>
+  <div class="banner">{{ t('print.nonpartisan') }}</div>
+
+  <div class="foot">
+    {{ t('print.pack_label') }}: {{ pack.locale_id }} · {{ pack.pack_version }}
+    {% if generated_at %} · {{ generated_at }}{% endif %}
+  </div>
+</body>
+</html>

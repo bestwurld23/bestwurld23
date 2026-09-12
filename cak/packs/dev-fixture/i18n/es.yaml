@@ -1,0 +1,74 @@
+# Spanish strings. Translation of PRD §19 canonical copy.
+# Marcadores disponibles: {authority} {phone} {address} {url}
+
+banner:
+  not_an_election_office: >-
+    Esta no es una oficina electoral oficial. La información se copia de
+    documentos oficiales publicados. No podemos decirle si usted tiene derecho
+    a votar.
+
+agent:
+  dont_know: >-
+    No tengo esa información en los archivos oficiales de este dispositivo. Por
+    favor comuníquese con: {authority}, {phone}, {address}.
+  refuse_eligibility: >-
+    No puedo decir si una persona tiene derecho a votar. Solo la oficina
+    electoral decide eso. Por favor comuníquese con: {authority}, {phone},
+    {address}.
+  refuse_partisan: >-
+    No doy consejos sobre candidatos, partidos ni respaldos. Solo repito
+    información oficial publicada. Para preguntas oficiales comuníquese con:
+    {authority}, {phone}, {address}.
+  refuse_injection: >-
+    Solo puedo responder con los archivos oficiales de este dispositivo, citando
+    la fuente. No puedo responder sin ellos. Por favor comuníquese con:
+    {authority}, {phone}, {address}.
+  refuse_ballot_secrecy: >-
+    El voto de cada persona es secreto, y este dispositivo no guarda ningún
+    registro de votos. Para preguntas oficiales comuníquese con: {authority},
+    {phone}, {address}.
+  refuse_tally: >-
+    Este dispositivo no recibe, cuenta ni transmite boletas, y usted no puede
+    votar por medio de él. Comuníquese con: {authority}, {phone}, {address}.
+
+kiosk:
+  title: Información para votar
+  skip_to_form: Ir al cuadro de preguntas
+  ask_label: Haga una pregunta sobre la votación
+  ask_placeholder: ¿Cuándo es la votación temprana?
+  ask_button: Preguntar
+  answer_heading: Respuesta
+  citations_heading: De dónde viene esta información
+  examples_heading: Puede preguntar
+  office_heading: Si este dispositivo no puede ayudar, llame a la oficina electoral
+  pack_label: Paquete de información
+  print_link: Imprimir la tarjeta guía
+  changelog_link: Registro de cambios de archivos
+  examples:
+    - ¿Cuándo es la votación temprana?
+    - ¿Dónde voto?
+    - ¿Cuál es el horario el día de la elección?
+    - ¿Cómo me comunico con la oficina electoral?
+
+print:
+  howto_title: Cómo votar
+  where_when: Dónde y cuándo
+  ask_the_office: Pregunte a la oficina electoral
+  by_text_message: Por mensaje de texto
+  minutes: minutos
+  wheelchair: Entrada sin escalones
+  no_sites_listed: >-
+    Este paquete no incluye lugares de votación. Llame a la oficina indicada
+    abajo.
+  nonpartisan: >-
+    Esta tarjeta no es partidista. No apoya a ningún candidato ni partido.
+  pack_label: Paquete de información
+
+steward:
+  do_not_interpret: >-
+    No interprete las leyes de identificación. No le diga a nadie que no puede
+    votar. Entréguele la tarjeta de contacto oficial.
+
+field_form:
+  reason_code_help: >-
+    Esto es lo que la persona dijo que ocurrió. No es una decisión legal.

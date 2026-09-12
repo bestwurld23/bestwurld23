@@ -1,0 +1,69 @@
+# English strings. Canonical copy is PRD §19.
+# Placeholders available: {authority} {phone} {address} {url}
+
+banner:
+  not_an_election_office: >-
+    This is not an official election office. Information is copied from
+    published official documents. We cannot say if you are eligible to vote.
+
+agent:
+  dont_know: >-
+    I don't have that in the official files on this device. Please contact:
+    {authority}, {phone}, {address}.
+  refuse_eligibility: >-
+    I cannot say whether someone may vote. Only the election office decides
+    that. Please contact: {authority}, {phone}, {address}.
+  refuse_partisan: >-
+    I don't give advice about candidates, parties or endorsements. I only repeat
+    published official information. For official questions contact:
+    {authority}, {phone}, {address}.
+  refuse_injection: >-
+    I can only answer from the official files on this device, with a citation.
+    I cannot answer without them. Please contact: {authority}, {phone},
+    {address}.
+  refuse_ballot_secrecy: >-
+    How a person voted is secret, and this device holds no record of any vote.
+    For official questions contact: {authority}, {phone}, {address}.
+  refuse_tally: >-
+    This device does not handle, count or transmit ballots, and you cannot vote
+    through it. Contact: {authority}, {phone}, {address}.
+
+kiosk:
+  title: Voting information
+  skip_to_form: Skip to the question box
+  ask_label: Ask a question about voting
+  ask_placeholder: When is early voting?
+  ask_button: Ask
+  answer_heading: Answer
+  citations_heading: Where this came from
+  examples_heading: Try asking
+  office_heading: If this device cannot help, call the election office
+  pack_label: Information pack
+  print_link: Print the how-to card
+  changelog_link: File change log
+  examples:
+    - When is early voting?
+    - Where do I vote?
+    - What are the election day hours?
+    - How do I reach the election office?
+
+print:
+  howto_title: How to vote
+  where_when: Where and when
+  ask_the_office: Ask the election office
+  by_text_message: By text message
+  minutes: minutes
+  wheelchair: Step-free entrance
+  no_sites_listed: No voting sites are listed in this pack. Call the office below.
+  nonpartisan: >-
+    This card is nonpartisan. It does not support any candidate or party.
+  pack_label: Information pack
+
+steward:
+  do_not_interpret: >-
+    Do not interpret ID laws. Do not tell anyone they cannot vote. Hand them the
+    official contact card.
+
+field_form:
+  reason_code_help: >-
+    This is what the person said happened. It is not a legal decision.

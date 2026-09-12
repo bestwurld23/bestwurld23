@@ -1,0 +1,48 @@
+[Unit]
+Description=Civic Access Kit — Civic Node (offline civic information)
+Documentation=file:///usr/share/doc/cak/steward-runbook.md
+# No network dependency on purpose: the node must come up and serve residents
+# whether or not there is a network, and must not wait for one that never
+# arrives (PRD §3 P2).
+After=local-fs.target
+
+[Service]
+Type=exec
+User=cak
+Group=cak
+ExecStart=/opt/cak/venv/bin/cak-node serve --config /etc/cak/node.toml
+Restart=always
+RestartSec=5
+
+# Power in these deployments is unreliable. Come back up, always.
+StartLimitIntervalSec=0
+
+# Hardening. The node needs to read its config and read/write its own state and
+# the pack; nothing else.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+ReadWritePaths=/var/lib/cak
+# Loopback plus LAN. Remove AF_INET/AF_INET6 entirely if the node serves only
+# over a local socket and you front it with a reverse proxy.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+# A Pi 5 with the extractive generator sits well under this. Raise it if you
+# load a local model.
+MemoryMax=2G
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cak-node
+
+[Install]
+WantedBy=multi-user.target

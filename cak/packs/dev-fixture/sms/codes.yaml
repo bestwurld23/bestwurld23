@@ -1,0 +1,16 @@
+# SMS short codes for this locale (PRD §7.3).
+# Payloads carry no names and no phone numbers.
+wait_code: WAIT
+closed_code: CLOSED
+open_code: OPEN
+help_code: HELP
+
+# Gateway is the steward's choice: twilio | africas_talking | local_modem.
+# Phase 0 ships the parser only; no gateway is configured here.
+gateway: none
+
+examples:
+  - "WAIT site01 25"
+  - "CLOSED site02"
+  - "OPEN site02"
+  - "HELP"

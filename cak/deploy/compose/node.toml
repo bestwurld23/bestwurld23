@@ -1,0 +1,42 @@
+# Development / lab configuration (PRD §12.2).
+#
+# Paths here are relative, which means "next to this file", so the repository
+# works as a checkout without touching /etc or /var:
+#
+#   cak-node serve --config deploy/compose/node.toml
+#
+# A real deployment puts this at /etc/cak/node.toml with absolute paths.
+
+locale_pack = "../../packs/dev-fixture"
+
+# Localhost only. To serve a kiosk or a LAN, set bind and set
+# steward_password_hash — the node refuses to start otherwise (PRD §12.4).
+bind = "127.0.0.1"
+port = 8080
+
+# Generate with: cak-node hash-password
+# Unset here, so this dev node has no steward API at all.
+# steward_password_hash = "pbkdf2_sha256$240000$...$..."
+
+# "extractive" quotes the official files and adds nothing — no model needed, and
+# it cannot hallucinate. Switch to "ollama" in Phase 1 once a local GGUF is on
+# the device; the citation lock applies either way.
+generator = "extractive"
+model = "llama3.2:3b"
+ollama_host = "http://127.0.0.1:11434"
+
+retrieval_backend = "sqlite_fts"
+top_k = 6
+
+# Off by default (PRD §13). When true, the node still stores only questions that
+# match no name, address, phone or date-of-birth pattern.
+log_queries = false
+
+db_path = "state/cak.db"
+changelog_path = "state/changelog.jsonl"
+changelog_key = "state/steward.ed25519"
+log_id = "caklog_dev_fixture"
+
+# Where a USB stick gets mounted. On Raspberry Pi OS this is usually
+# /media/<user>/<label>.
+steward_inbox = "state/usb-inbox"

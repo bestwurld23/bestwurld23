@@ -1,0 +1,56 @@
+# x86_64 lab deployment (PRD §12.1). For a Raspberry Pi, use deploy/pi/ instead:
+# a Pi runs this as a plain systemd service with no container overhead.
+#
+#   docker compose -f deploy/compose/docker-compose.yml up --build
+#
+# Note what is absent: no database service, no cache, no message broker, no
+# reverse proxy to the internet. A Civic Node is one process, a SQLite file and
+# a folder of documents. If this file ever grows a second service, something has
+# gone wrong with the design.
+
+services:
+  civic-node:
+    build:
+      context: ../..
+      dockerfile: deploy/compose/Dockerfile
+    image: civic-access-kit/node:0.1.0
+    container_name: cak-node
+    restart: unless-stopped
+
+    # Published on loopback only. Change to "8080:8080" to reach it from the
+    # LAN, and set steward_password_hash in node.toml first — the node refuses
+    # to start bound off-localhost without one.
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    environment:
+      CAK_CONFIG: /etc/cak/node.toml
+
+    volumes:
+      # The pack is read-write because the steward replaces files in official/.
+      - ../../packs/dev-fixture:/var/lib/cak/pack
+      - ./node.container.toml:/etc/cak/node.toml:ro
+      - cak-state:/var/lib/cak/state
+      # Mount a USB stick here to load official files:
+      #   docker compose run --rm -v /media/usb:/media/cak-usb civic-node \
+      #     cak-node load-folder --config /etc/cak/node.toml /media/cak-usb
+      # - /media/usb:/media/cak-usb:ro
+
+    # No outbound network is needed to serve residents. Uncomment to prove it —
+    # everything except an optional sync to a steward-chosen endpoint still works.
+    # network_mode: none
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  cak-state:

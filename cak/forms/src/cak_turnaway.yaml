@@ -1,0 +1,83 @@
+# XLSForm source for cak_turnaway (PRD §7.2). Apache-2.0.
+#
+# The most sensitive of the three forms, and the one most likely to be misused.
+# It records what a person said happened. It does not record who they are, and
+# it does not decide whether what happened was lawful.
+settings:
+  form_title: Turned away from a voting site
+  form_id: cak_turnaway
+  version: "2026091201"
+  default_language: English (en)
+
+survey:
+  - type: note
+    name: intro
+    label: |
+      Record that someone said they were turned away.
+
+      THIS IS NOT A LEGAL FINDING. It is what the person told you happened.
+
+      Do not record their name, address, phone number or ID details.
+      Do not photograph them or their documents.
+      Give them the election office contact card.
+
+  - type: select_one sites
+    name: site_id
+    label: Which site?
+    required: true
+    appearance: minimal
+
+  - type: dateTime
+    name: observed_at
+    label: When?
+    required: true
+    default: now()
+    constraint: ". <= now() + duration('PT2H') and . >= now() - duration('P7D')"
+    constraint_message: >-
+      That time looks wrong. Check the phone's clock, then enter it again.
+
+  - type: select_one reason_code
+    name: reason_code
+    label: What did the person say the reason was?
+    required: true
+    hint: This is what the person said happened. It is not a legal decision.
+
+  - type: text
+    name: reason_other
+    label: In their words, briefly
+    relevant: ${reason_code} = 'other'
+    hint: What happened, not who it happened to. No names.
+
+  - type: text
+    name: language_needed
+    label: What language did they need?
+    relevant: ${reason_code} = 'language'
+    hint: The language only.
+
+  - type: select_one yes_no
+    name: referred_to_office
+    label: Were they given the election office contact card?
+    required: true
+    hint: If not, do it now. That is the one thing that might still help them.
+
+  - type: text
+    name: notes
+    label: Anything else?
+    appearance: multiline
+    hint: >-
+      No names, no addresses, no ID numbers, no description of the person.
+      Describe what happened at the site.
+
+choices:
+  yes_no:
+    - { name: "yes", label: "Yes" }
+    - { name: "no", label: "No" }
+  reason_code:
+    - { name: id, label: "Identification — they were told their ID was not accepted" }
+    - { name: address, label: "Address — a problem with their address or no street address" }
+    - { name: registration, label: "Registration — they were told they were not on the list" }
+    - { name: closed, label: "Site was closed, moved, or out of hours" }
+    - { name: language, label: "Language — no help available in their language" }
+    - { name: accessibility, label: "Accessibility — they could not enter or use the site" }
+    - { name: other, label: "Something else" }
+  sites: from_pack

@@ -1,0 +1,50 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-89.6501, 39.7817] },
+      "properties": {
+        "id": "site01",
+        "name": "Springfield Library",
+        "hours": "08:00-18:00 weekdays",
+        "address_text": "1 Main St, Springfield",
+        "accepts_non_street_address_note": null,
+        "wheelchair": true,
+        "languages": ["en", "es"],
+        "early_voting": true,
+        "election_day": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-89.6612, 39.7902] },
+      "properties": {
+        "id": "site02",
+        "name": "Riverside Chapel Hall",
+        "hours": "06:00-19:00 election day only",
+        "address_text": "22 River Road, Springfield",
+        "accepts_non_street_address_note": null,
+        "wheelchair": false,
+        "languages": ["en"],
+        "early_voting": false,
+        "election_day": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-89.6702, 39.8001] },
+      "properties": {
+        "id": "site03",
+        "name": "Northside Community Room",
+        "hours": "06:00-19:00 election day only",
+        "address_text": "400 North Ave, Springfield",
+        "accepts_non_street_address_note": "Voters without a street address should call the Board before election day.",
+        "wheelchair": true,
+        "languages": ["en", "es"],
+        "early_voting": false,
+        "election_day": true
+      }
+    }
+  ]
+}

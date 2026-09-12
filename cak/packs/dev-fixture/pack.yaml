@@ -1,0 +1,32 @@
+cak_pack_version: 1
+locale_id: us-xx-springfield
+name: Springfield (development fixture)
+authority:
+  name: Springfield Civic Board
+  url: https://example.invalid/springfield
+  phone: "555-0100"
+  address: "10 Civic Plaza, Springfield"
+languages: [en, es]
+default_language: en
+retrieval_min_score: 0.35
+legal_banner: >-
+  This is not an official election office. Information is copied from published
+  official documents. We cannot say if you are eligible to vote.
+time_zone: America/Chicago
+sites_file: sites/sites.geojson
+official_dir: official/
+i18n_dir: i18n/
+sms:
+  enabled: true
+  wait_code: WAIT
+  closed_code: CLOSED
+  help_code: HELP
+does_not:
+  - determine_eligibility
+  - collect_ballots
+  - tally_votes
+  - store_personal_data
+pack_version: "2026.09.12"
+files_license: >-
+  Fixture documents are fictional and released CC0. In a real pack, official
+  documents remain the copyright of the authority; pack metadata is CC-BY-4.0.

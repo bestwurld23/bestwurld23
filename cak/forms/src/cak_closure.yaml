@@ -1,0 +1,93 @@
+# XLSForm source for cak_closure (PRD §7.2). Apache-2.0.
+#
+# A closure report is a rumour until a steward confirms it against an official
+# file. The form says so on its face, because a well-meaning volunteer telling
+# people a site moved — when it did not — does real damage.
+settings:
+  form_title: Site closed, moved, or hours changed
+  form_id: cak_closure
+  version: "2026091201"
+  default_language: English (en)
+
+survey:
+  - type: note
+    name: intro
+    label: |
+      Report that a voting site is closed, has moved, or changed its hours.
+
+      What you enter here is UNOFFICIAL until a steward confirms it against a
+      document from the election office. Do not tell residents a site has moved
+      on the strength of this report alone.
+
+      Do not record anyone's name. Do not photograph faces.
+
+  - type: select_one sites
+    name: site_id
+    label: Which site?
+    required: true
+    appearance: minimal
+
+  - type: dateTime
+    name: observed_at
+    label: When did you see this?
+    required: true
+    default: now()
+    constraint: ". <= now() + duration('PT2H') and . >= now() - duration('P7D')"
+    constraint_message: >-
+      That time looks wrong. Check the phone's clock, then enter it again.
+
+  - type: select_one reported_status
+    name: reported_status
+    label: What is the status?
+    required: true
+
+  - type: text
+    name: new_location_text
+    label: Where has it moved to?
+    relevant: ${reported_status} = 'moved'
+    hint: >-
+      As written on the sign, if there is one. No names. Unofficial until the
+      steward confirms it against an official file.
+
+  - type: text
+    name: new_hours_text
+    label: What are the new hours?
+    relevant: ${reported_status} = 'hours_changed'
+    hint: As written on the sign or notice. No names.
+
+  - type: select_one evidence_type
+    name: evidence_type
+    label: What are you going on?
+    required: true
+
+  - type: image
+    name: evidence_photo
+    label: Photo of the sign or notice
+    relevant: ${evidence_type} = 'sign'
+    hint: The sign or the door. No faces.
+
+  - type: text
+    name: evidence_url
+    label: Link, if this was published somewhere
+    relevant: ${evidence_type} = 'published'
+    hint: The election office's own page, a news report, or an official notice.
+
+  - type: text
+    name: notes
+    label: Anything else?
+    appearance: multiline
+    hint: No names.
+
+choices:
+  reported_status:
+    - { name: open, label: "Open as published" }
+    - { name: closed, label: "Closed when it should be open" }
+    - { name: moved, label: "Moved to a different place" }
+    - { name: hours_changed, label: "Different hours than published" }
+  evidence_type:
+    - { name: sign, label: "A sign or notice at the site" }
+    - { name: seen, label: "I saw it myself" }
+    - { name: staff, label: "Site staff told me" }
+    - { name: published, label: "Something published online or in the news" }
+    - { name: secondhand, label: "Someone else told me" }
+  sites: from_pack

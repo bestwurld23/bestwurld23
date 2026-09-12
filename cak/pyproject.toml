@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "civic-access-kit"
+version = "0.1.0"
+description = "Offline-first, open-source civic information infrastructure. Not a voting machine."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "AGPL-3.0-or-later AND Apache-2.0" }
+authors = [{ name = "Slide Technologies" }]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "pydantic>=2.6",
+  "pyyaml>=6.0",
+  "cryptography>=41",
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4.0", "weasyprint>=60"]
+llm = ["httpx>=0.27"]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.4"]
+
+[project.scripts]
+cak-changelog = "cak_changelog.cli:main"
+cak-node = "cak_node.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["node", "changelog", "sms"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["node", "changelog", "sms"]
+filterwarnings = ["error::DeprecationWarning:cak_node.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "T20", "ANN201"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN201"]
+# The two command-line entry points talk to a steward through stdout. Everywhere
+# else, a print is a debug statement someone forgot (PRD §21.3).
+"changelog/cak_changelog/cli.py" = ["T20"]
+"node/cak_node/__main__.py" = ["T20"]
+"forms/build.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cak_node", "cak_changelog", "cak_sms"]

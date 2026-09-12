@@ -1,0 +1,22 @@
+profile,item,qty,indicative_usd,notes
+minimum,"Raspberry Pi 5, 4 GB",1,60,"Extractive generator only; no local model"
+minimum,27 W USB-C power supply,1,12,"Under-powering a Pi 5 causes failures that look like software bugs"
+minimum,64 GB A2 microSD,1,10,"A2 rating matters for random I/O"
+minimum,Passive case with heatsink,1,12,
+minimum,32 GB USB stick,2,12,"One current pack, one previous, for hand rollback"
+recommended,"Raspberry Pi 5, 8 GB",1,80,"Headroom for a 3B-class local model"
+recommended,27 W USB-C power supply,1,12,
+recommended,128 GB A2 microSD,1,18,"Alternative: 256 GB NVMe + M.2 HAT at ~55"
+recommended,Active cooler case,1,15,"A kiosk runs all day in a warm room"
+recommended,32 GB USB stick,2,12,
+recommended,"USB power bank, 20000 mAh PD",1,40,"Pass-through mode acts as a UPS; ~4 hours runtime"
+recommended,7-inch touchscreen,1,70,"Kiosk mode; optional if residents use their own phones"
+solar,100 W solar panel,1,70,"~400 Wh/day at four effective sun-hours"
+solar,"Charge controller, 12 V",1,25,"MPPT if the budget allows, PWM otherwise"
+solar,"12 V 20 Ah LiFePO4 battery",1,90,"~240 Wh; one full day with no sun. Tolerates heat and cycling"
+solar,12 V to 5 V/5 A USB-C buck converter,1,15,"Must sustain 5 V at 5 A for a Pi 5"
+solar,"Fused wiring and connectors",1,20,"Fuse the battery side"
+printer,Monochrome laser printer,1,120,"Cheapest per page for how-to cards; grayscale templates provided"
+printer,Thermal receipt printer,1,60,"Alternative for single-answer handouts"
+optional,4G USB dongle,1,30,"Outbound sync only; never required to serve residents"
+optional,Wi-Fi AP antenna,1,15,"For AP mode so phones can join with no upstream internet"

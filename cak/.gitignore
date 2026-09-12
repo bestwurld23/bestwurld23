@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+# forms/dist holds the built XLSForms, which are a committed artifact: a steward
+# imports them into KoBo without a Python toolchain. CI checks they match their
+# sources in forms/src.
+!forms/dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node state. Never commit a node's database, log or key: the database is the
+# deployment's own counters, and the key is the thing that signs its history.
+*.db
+*.db-wal
+*.db-shm
+*.ed25519
+*.pem
+!packs/*/keys/pack_public.pem
+changelog.jsonl
+deploy/compose/state/
+state/
+
+# Local configuration and secrets
+.env
+.env.*
+node.local.toml
+/etc-cak/
+
+# Generated print output
+print/out/
+*.pdf
+!docs/**/*.pdf
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Never commit real official documents unless the authority's terms allow it,
+# and never commit anything with personal data in it. Packs under a private/
+# directory are ignored so a steward can keep a working copy locally.
+packs/private/

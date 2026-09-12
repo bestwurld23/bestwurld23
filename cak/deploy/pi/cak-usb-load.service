@@ -1,0 +1,32 @@
+[Unit]
+Description=Civic Access Kit — load official files from a mounted USB stick
+Documentation=file:///usr/share/doc/cak/steward-runbook.md
+
+[Service]
+Type=oneshot
+User=cak
+Group=cak
+
+# Loads every permitted file from the stick into official/, appends one signed
+# change-log record naming each file's hash, and rebuilds the index. Files
+# identical to what is already on the node are skipped, so plugging the same
+# stick in twice does not inflate the chain.
+#
+# This is a convenience for a steward who cannot use a terminal. It is NOT
+# enabled by default, and it should stay disabled anywhere the device is
+# physically reachable by the public: with it enabled, anyone who can plug in a
+# USB stick can change what the node says. The change log makes that detectable,
+# not impossible. See docs/threat-model.md T1.
+ExecStart=/opt/cak/venv/bin/cak-node load-folder \
+    --config /etc/cak/node.toml \
+    --source "USB stick, automatic load" \
+    /media/cak-usb
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/cak
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cak-usb-load

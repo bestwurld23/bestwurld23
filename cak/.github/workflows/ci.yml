@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the floor because a Raspberry Pi OS image may not have 3.12
+        # yet; 3.12 is what the PRD targets for new deployments.
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" openpyxl
+
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Test
+        run: pytest -q
+
+      - name: Verify the fixture pack loads and answers
+        run: |
+          python -m cak_node health --config deploy/compose/node.toml
+          python -m cak_node ask --config deploy/compose/node.toml "when is early voting?" --json
+
+      - name: Verify the change log the node just created
+        run: python -m cak_node verify --config deploy/compose/node.toml
+
+      - name: Forms are built from their sources
+        run: |
+          python forms/build.py
+          git diff --exit-code -- forms/dist || {
+            echo "::error::forms/dist is stale — run 'python forms/build.py' and commit the result"
+            exit 1
+          }
+
+  no-pii:
+    name: Privacy guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -e ".[dev]"
+
+      # Run the privacy tests as their own job so a failure here is unmissable
+      # in the checks list rather than buried in a matrix cell (PRD §17.7).
+      - name: No personal data may reach cak.db
+        run: pytest -q tests/test_no_pii.py -v
+
+      - name: The agent may not answer without citations
+        run: pytest -q tests/test_citation_lock.py -v
+
+  offline:
+    name: Offline behaviour
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -e ".[dev]"
+
+      # PRD §17.4: every Must feature works with the network disabled. The test
+      # breaks the socket layer itself rather than trusting that nothing calls out.
+      - name: All Must features work with no network
+        run: pytest -q tests/test_offline.py -v
+
+  non-goals:
+    name: Non-goals (PRD §2.2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A crude but load-bearing check: this project must not grow ballot
+      # handling, tallying, eligibility logic or biometrics. A real addition
+      # would arrive with identifiers like these, and a reviewer who is tired at
+      # 11pm will not catch it. Adjust the pattern if it produces a false
+      # positive, but do not delete the job.
+      - name: No ballot, tally, eligibility or biometric code
+        run: |
+          pattern='def (cast|tally|count)_(ballot|vote)|class .*(Ballot|Tally|Eligibility)(Engine|Service|Decider)|is_eligible_to_vote|fraud_score|def (capture|match)_(fingerprint|face|iris)'
+          if grep -rInE "$pattern" --include='*.py' node changelog sms; then
+            echo "::error::Matched a PRD §2.2 non-goal. See CONTRIBUTING.md."
+            exit 1
+          fi
+          echo "No non-goal patterns found."
+
+      - name: Licence files are present
+        run: |
+          test -s LICENSE-APACHE
+          test -s LICENSE-AGPL
+          grep -q "GNU AFFERO GENERAL PUBLIC LICENSE" LICENSE-AGPL
+          grep -q "Apache License" LICENSE-APACHE
+
+      - name: Fixture pack declares what it does not do
+        run: |
+          grep -q "determine_eligibility" packs/dev-fixture/pack.yaml
+          grep -q "collect_ballots" packs/dev-fixture/pack.yaml

@@ -1,0 +1,29 @@
+# node.toml as mounted inside the container (see docker-compose.yml).
+# Absolute paths, because inside the container the layout is fixed.
+
+locale_pack = "/var/lib/cak/pack"
+
+# Binds to all interfaces *inside the container*; the compose file publishes it
+# on loopback only. Because this is not localhost from the node's point of view,
+# steward_password_hash below is mandatory — the node refuses to start without
+# it (PRD §12.4).
+bind = "0.0.0.0"
+port = 8080
+
+# Default password is "change-me". Replace it before this reaches a LAN:
+#   cak-node hash-password
+steward_password_hash = "pbkdf2_sha256$240000$SbJK2dSn0pDr+AQ8hmesIQ==$lZkP3YoXZCLKrHCx6YOO4pvRYQyU/7a9d4f6xu/AYLc="
+
+generator = "extractive"
+model = "llama3.2:3b"
+ollama_host = "http://127.0.0.1:11434"
+
+retrieval_backend = "sqlite_fts"
+top_k = 6
+log_queries = false
+
+db_path = "/var/lib/cak/state/cak.db"
+changelog_path = "/var/lib/cak/state/changelog.jsonl"
+changelog_key = "/var/lib/cak/state/steward.ed25519"
+steward_inbox = "/media/cak-usb"
+log_id = "caklog_compose"
