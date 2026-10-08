@@ -1,0 +1,1116 @@
+<title>Alignment Deed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a phosphor console on the left rail deals title-deed cards down one reading column. */
+:root{
+  --bg:#070b09; --bg-raise:#0d1410; --bg-sunk:#040706; --card:#0b120e;
+  --ink:#d9ebdb; --ink-dim:#7e9483; --rule:#1e2d23;
+  --phosphor:#4ef08a; --phosphor-soft:rgba(78,240,138,.11); --phosphor-line:rgba(78,240,138,.28);
+  --deed-navy:#3a7ad9; --deed-sky:#86cdeb; --deed-orange:#f08a2a; --deed-green:#39b866;
+  --deed-yellow:#e8c93a; --deed-red:#d8463a; --deed-brown:#a0703f; --deed-pink:#e07ab0;
+  --good:#39b866; --warn:#e8c93a; --crit:#e2554a;
+  --band-shadow:inset 0 -1px 0 rgba(0,0,0,.45);
+  --font-display:"Anton","Oswald",Impact,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){ :root:not([data-theme="dark"]){
+  --bg:#dde8da; --bg-raise:#f4f7f0; --bg-sunk:#cad7c6; --card:#fbfcf8;
+  --ink:#101a10; --ink-dim:#4d5c4e; --rule:#121c12;
+  --phosphor:#0f6f3a; --phosphor-soft:rgba(15,111,58,.1); --phosphor-line:rgba(15,111,58,.3);
+  --deed-navy:#1f5fb8; --deed-sky:#79bedd; --deed-orange:#d9741a; --deed-green:#1f8f48;
+  --deed-yellow:#c9a613; --deed-red:#c2362b; --deed-brown:#8a5c30; --deed-pink:#c95f98;
+  --good:#1f8f48; --warn:#9a7f0a; --crit:#b53529;
+  --band-shadow:inset 0 -1px 0 rgba(0,0,0,.2);
+  color-scheme:light;
+}}
+:root[data-theme="light"]{
+  --bg:#dde8da; --bg-raise:#f4f7f0; --bg-sunk:#cad7c6; --card:#fbfcf8;
+  --ink:#101a10; --ink-dim:#4d5c4e; --rule:#121c12;
+  --phosphor:#0f6f3a; --phosphor-soft:rgba(15,111,58,.1); --phosphor-line:rgba(15,111,58,.3);
+  --deed-navy:#1f5fb8; --deed-sky:#79bedd; --deed-orange:#d9741a; --deed-green:#1f8f48;
+  --deed-yellow:#c9a613; --deed-red:#c2362b; --deed-brown:#8a5c30; --deed-pink:#c95f98;
+  --good:#1f8f48; --warn:#9a7f0a; --crit:#b53529;
+  --band-shadow:inset 0 -1px 0 rgba(0,0,0,.2);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1140px;margin:0 auto;padding-inline:18px;padding-block:0 64px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+:is(a,button,input,textarea,select,[tabindex]):focus-visible{outline:2px solid var(--phosphor);outline-offset:2px}
+a{color:var(--phosphor)}
+.mono{font-family:var(--font-mono)}
+.lbl{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-dim)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---- header: the only place the rain runs ---- */
+header{position:relative;overflow:hidden;border-bottom:2px solid var(--rule);background:var(--bg-sunk)}
+#rain{position:absolute;inset:0;width:100%;height:100%;opacity:.24;pointer-events:none}
+.hd{position:relative;max-width:1140px;margin:0 auto;padding-inline:18px;padding-block:26px 22px;
+  display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between}
+.mark{display:flex;align-items:center;gap:12px;min-width:0}
+.die{width:38px;height:38px;flex:none;border:2px solid var(--rule);border-radius:7px;
+  background:var(--card);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:5px;gap:2px}
+.die i{border-radius:50%;background:transparent}
+.die i.on{background:var(--phosphor)}
+.mark h1{font-family:var(--font-display);font-size:clamp(28px,6vw,40px);line-height:.92;
+  letter-spacing:.012em;text-transform:uppercase}
+.mark p{margin:3px 0 0;font-size:12.5px;color:var(--ink-dim);max-width:46ch}
+.hd-right{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* ---- controls ---- */
+.btn{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;padding:9px 14px;border:2px solid var(--rule);border-radius:6px;
+  background:var(--card);cursor:pointer;transition:background .14s,transform .08s}
+.btn:hover{background:var(--phosphor-soft)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.go{background:var(--phosphor);color:var(--bg-sunk);border-color:var(--phosphor);
+  font-size:13px;padding:13px 24px}
+.btn.go:hover{filter:brightness(1.08);background:var(--phosphor)}
+.btn.sm{padding:6px 10px;font-size:10px}
+.seg{display:flex;border:2px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;padding:8px 13px;cursor:pointer;font-family:var(--font-mono);
+  font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-dim)}
+.seg button[aria-selected="true"]{background:var(--phosphor);color:var(--bg-sunk)}
+label.f{display:block;margin-bottom:14px}
+label.f>span{display:block;margin-bottom:5px}
+input[type=text],input[type=url],input[type=number],textarea,select{width:100%;background:var(--bg-sunk);
+  border:1px solid var(--rule);border-radius:5px;padding:9px 11px;font-size:13.5px;font-family:var(--font-mono)}
+textarea{resize:vertical;line-height:1.5}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 16px}
+
+/* ---- the deed card ---- */
+.deed{border:2px solid var(--rule);border-radius:4px;background:var(--card);overflow:hidden;
+  box-shadow:0 1px 0 var(--rule)}
+.band{padding:9px 14px;border-bottom:2px solid var(--rule);box-shadow:var(--band-shadow);
+  display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;justify-content:space-between}
+.band .t{font-family:var(--font-display);font-size:15px;letter-spacing:.05em;text-transform:uppercase;
+  line-height:1.15}
+.band .s{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;opacity:.82}
+.deed-body{padding:16px 18px}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:flex;align-items:baseline;gap:7px;padding:5px 0;border-bottom:1px dotted var(--rule);
+  font-size:13px}
+.rows li:last-child{border-bottom:0}
+.rows .k{color:var(--ink-dim);font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;flex:none}
+.rows .d{flex:1;border-bottom:1px dotted var(--rule);min-width:14px;translate:0 -3px}
+.rows .v{font-family:var(--font-mono);font-weight:500;text-align:right;min-width:0}
+
+section{margin-top:30px}
+.sec-h{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;
+  margin-bottom:12px;padding-bottom:7px;border-bottom:2px solid var(--rule)}
+.sec-h h2{font-family:var(--font-display);font-size:19px;letter-spacing:.045em;text-transform:uppercase}
+.sec-h p{margin:0;font-size:12px;color:var(--ink-dim);max-width:60ch}
+
+/* ---- console ---- */
+.console{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px;margin-top:26px;align-items:start}
+@media (max-width:860px){.console{grid-template-columns:1fr}}
+.pane{border:2px solid var(--rule);border-radius:4px;background:var(--card);padding:16px 18px;min-width:0}
+.pane-h{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hint{font-size:12px;color:var(--ink-dim);margin:0 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;padding:3px 8px;
+  border:1px solid var(--rule);border-radius:999px;background:var(--bg-sunk);color:var(--ink-dim)}
+.chip.on{border-color:var(--phosphor);color:var(--phosphor);background:var(--phosphor-soft)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.status{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-dim);min-width:0;flex:1}
+.status b{color:var(--phosphor);font-weight:600}
+.status.err b{color:var(--crit)}
+
+/* ---- verdict ---- */
+.verdict{display:grid;grid-template-columns:minmax(0,1fr) 172px;gap:0}
+@media (max-width:640px){.verdict{grid-template-columns:1fr}}
+.verdict .vb{padding:18px;border-right:2px solid var(--rule);min-width:0}
+@media (max-width:640px){.verdict .vb{border-right:0;border-bottom:2px solid var(--rule)}}
+.role{font-family:var(--font-display);font-size:clamp(26px,5.4vw,38px);line-height:1;
+  letter-spacing:.02em;text-transform:uppercase}
+.verdict .vb p{margin:10px 0 0;font-size:14px;max-width:62ch}
+.meter{padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;background:var(--bg-sunk)}
+.meter .big{font-family:var(--font-display);font-size:60px;line-height:.86;font-variant-numeric:tabular-nums}
+.ring{width:118px;height:118px}
+
+/* ---- axis deeds ---- */
+.axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(246px,1fr));gap:14px}
+.axis .band{color:var(--band-ink);background:var(--band-bg)}
+.axis .sc{font-family:var(--font-display);font-size:20px;line-height:1}
+.axis .deed-body{padding:13px 15px;display:flex;flex-direction:column;gap:9px}
+.axis p{margin:0;font-size:13px}
+.axis .ev{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-dim);
+  border-left:2px solid var(--band-bg);padding-left:9px}
+.track{height:7px;border-radius:999px;background:var(--bg-sunk);overflow:hidden;border:1px solid var(--rule)}
+.track i{display:block;height:100%;background:var(--band-bg)}
+
+/* ---- gates ---- */
+.gates{display:flex;flex-direction:column;gap:9px}
+.gate{display:flex;gap:11px;padding:12px 14px;border:2px solid var(--rule);border-radius:4px;
+  background:var(--card);border-left-width:6px}
+.gate.hard{border-left-color:var(--crit)}
+.gate.soft{border-left-color:var(--warn)}
+.gate .gi{flex:none;width:52px}
+.gate .gt{min-width:0;font-size:13px}
+.gate b{display:block;font-size:13.5px;margin-bottom:3px}
+.gate .fix{color:var(--ink-dim);font-size:12.5px}
+
+/* ---- language kit ---- */
+.terms{width:100%;border-collapse:collapse;font-size:13px}
+.terms th{text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-dim);padding:0 12px 7px 0;border-bottom:2px solid var(--rule);
+  white-space:nowrap}
+.terms td{padding:9px 12px 9px 0;border-bottom:1px dotted var(--rule);vertical-align:top}
+.terms td:first-child{font-family:var(--font-mono);font-weight:600;color:var(--phosphor);white-space:nowrap}
+.tw{overflow-x:auto}
+.kit{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:14px;margin-top:14px}
+.ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13px}
+.ul li{display:flex;gap:8px}
+.ul li::before{font-family:var(--font-mono);font-weight:600;flex:none}
+.say li::before{content:"+";color:var(--good)}
+.avoid li::before{content:"\2212";color:var(--crit)}
+.steps{counter-reset:s}
+.steps li{counter-increment:s}
+.steps li::before{content:counter(s);color:var(--phosphor)}
+.draft{font-family:var(--font-body);font-size:14px;line-height:1.65;white-space:pre-wrap;margin:0}
+
+/* ---- leads ---- */
+.leads{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:14px}
+.lead .deed-body{display:flex;flex-direction:column;gap:9px}
+.lead p{margin:0;font-size:13px}
+.lead .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.conf{font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid currentColor}
+.conf.high{color:var(--good)}.conf.medium{color:var(--warn)}.conf.low{color:var(--ink-dim)}
+
+.note{font-size:12px;color:var(--ink-dim);margin:10px 0 0}
+.ex{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;
+  font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--bg-sunk);
+  background:var(--deed-yellow);padding:3px 9px;border-radius:3px}
+footer{margin-top:44px;padding-top:20px;border-top:2px solid var(--rule);font-size:12.5px;
+  color:var(--ink-dim);display:flex;flex-direction:column;gap:9px}
+footer p{margin:0;max-width:72ch}
+.spin{display:inline-block;width:9px;animation:sp 1s steps(4) infinite}
+@keyframes sp{0%{content:"|"}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition:none!important}}
+</style>
+
+<header>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="hd">
+    <div class="mark">
+      <div class="die" aria-hidden="true"><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i></div>
+      <div>
+        <h1>Alignment Deed</h1>
+        <p>Read an RFP against your organization. Get a role, a rubric you can argue with, and the funder's own vocabulary.</p>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="seg" role="tablist" aria-label="Section">
+        <button role="tab" id="tab-read" aria-selected="true" aria-controls="v-read">Read</button>
+        <button role="tab" id="tab-org" aria-selected="false" aria-controls="v-org">Org</button>
+        <button role="tab" id="tab-runs" aria-selected="false" aria-controls="v-runs">Runs</button>
+      </div>
+      <button class="btn sm" id="themeBtn" aria-label="Switch theme">Theme</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ============ READ ============ -->
+  <div id="v-read" role="tabpanel" aria-labelledby="tab-read">
+    <div class="console">
+      <div class="pane">
+        <div class="pane-h">
+          <h2 class="lbl">The opportunity</h2>
+          <button class="btn sm" id="loadSample">Load example</button>
+        </div>
+        <p class="hint">Paste the RFP, NOFO, or funding announcement. Eligibility and review-criteria sections matter most &mdash; paste those if you paste nothing else.</p>
+        <label class="f"><span class="lbl">RFP text</span>
+          <textarea id="rfpText" rows="14" placeholder="Paste the full solicitation here..."></textarea>
+        </label>
+        <div class="grid2">
+          <label class="f"><span class="lbl">Funder (optional)</span><input type="text" id="rfpFunder" placeholder="e.g. State Broadband Office"></label>
+          <label class="f"><span class="lbl">Deadline (optional)</span><input type="text" id="rfpDue" placeholder="e.g. 2026-01-15"></label>
+        </div>
+        <div class="bar">
+          <button class="btn go" id="runBtn">Read the RFP</button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="pane">
+        <div class="pane-h">
+          <h2 class="lbl">Your organization</h2>
+          <button class="btn sm" id="editOrg">Edit</button>
+        </div>
+        <p class="hint" id="orgHint">The rubric scores the RFP against this profile. Fill it in once.</p>
+        <ul class="rows" id="orgSummary"></ul>
+        <div class="chips" id="orgChips" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <!-- ============ ORG ============ -->
+  <div id="v-org" role="tabpanel" aria-labelledby="tab-org" hidden>
+    <section>
+      <div class="sec-h">
+        <div><h2>Organization profile</h2>
+        <p>Kept to your account and private. The page cannot crawl your site &mdash; the sandbox blocks outbound requests &mdash; so paste your About and Programs text and let it fill the fields.</p></div>
+      </div>
+      <div class="console">
+        <div class="pane">
+          <h3 class="lbl" style="margin-bottom:10px">Paste from your website</h3>
+          <p class="hint">Copy your About, Programs, and Impact pages in. One pass fills everything on the right, which you can then correct.</p>
+          <label class="f"><span class="lbl">Website text</span>
+            <textarea id="siteText" rows="11" placeholder="Paste your About / Programs / Impact copy here..."></textarea>
+          </label>
+          <label class="f"><span class="lbl">Website URL (for the record)</span><input type="url" id="oSite" placeholder="https://"></label>
+          <div class="bar">
+            <button class="btn go" id="extractBtn">Fill the profile</button>
+            <p class="status" id="exStatus" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="pane">
+          <h3 class="lbl" style="margin-bottom:10px">Fields</h3>
+          <label class="f"><span class="lbl">Organization name</span><input type="text" id="oName"></label>
+          <div class="grid2">
+            <label class="f"><span class="lbl">Legal status</span>
+              <select id="oStatus">
+                <option value="501c3">501(c)(3) public charity</option>
+                <option value="fiscally-sponsored">Fiscally sponsored project</option>
+                <option value="501c4">501(c)(4)</option>
+                <option value="government">Government / public agency</option>
+                <option value="school">School or district</option>
+                <option value="tribal">Tribal entity</option>
+                <option value="for-profit">For-profit / social enterprise</option>
+                <option value="unincorporated">Unincorporated group</option>
+              </select>
+            </label>
+            <label class="f"><span class="lbl">Years operating</span><input type="number" id="oYears" min="0" placeholder="e.g. 4"></label>
+          </div>
+          <div class="grid2">
+            <label class="f"><span class="lbl">Annual budget (USD)</span><input type="number" id="oBudget" min="0" placeholder="e.g. 450000"></label>
+            <label class="f"><span class="lbl">Staff (FTE)</span><input type="number" id="oStaff" min="0" step="0.5" placeholder="e.g. 3"></label>
+          </div>
+          <label class="f"><span class="lbl">Geography served</span><input type="text" id="oGeo" placeholder="e.g. Joliet and Will County, Illinois"></label>
+          <label class="f"><span class="lbl">Populations served</span><input type="text" id="oPop" placeholder="e.g. 16-24 year olds not in school or work"></label>
+          <label class="f"><span class="lbl">Mission</span><textarea id="oMission" rows="3"></textarea></label>
+          <label class="f"><span class="lbl">Programs and services</span><textarea id="oPrograms" rows="4"></textarea></label>
+          <label class="f"><span class="lbl">Outcomes you can evidence</span><textarea id="oOutcomes" rows="3" placeholder="Numbers you can defend in a proposal"></textarea></label>
+          <label class="f"><span class="lbl">Past and current funders</span><input type="text" id="oFunders" placeholder="Comma separated"></label>
+          <h3 class="lbl" style="margin:4px 0 8px">Compliance readiness</h3>
+          <div class="chips" id="capChips"></div>
+          <div class="bar"><button class="btn go" id="saveOrg">Save profile</button>
+            <p class="status" id="saveStatus" role="status" aria-live="polite"></p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ RUNS ============ -->
+  <div id="v-runs" role="tabpanel" aria-labelledby="tab-runs" hidden>
+    <section>
+      <div class="sec-h">
+        <div><h2>Saved runs</h2><p>Every reading you keep, newest first. Open one to bring it back into the console.</p></div>
+      </div>
+      <div id="runsList"></div>
+    </section>
+    <section>
+      <div class="sec-h">
+        <div><h2>Shared library</h2>
+        <p>Opportunities other organizations chose to publish, with no org details attached. Scan it for what is circulating in your issue area.</p></div>
+      </div>
+      <div id="libList"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p><b>How the score works.</b> Claude reads the RFP and your profile and returns findings per axis with quotes. The page then does the arithmetic itself: six weighted axes, a capacity override from your award-to-budget ratio, and a hard blocker capping the total at 34. The role comes from rules on those numbers, not from the model's opinion, so you can argue with any part of it.</p>
+    <p><b>What it will not do.</b> It cannot reach your website or any grant database from here, and it does not verify that a lead is open. Treat the opportunities it names as search starting points and confirm each on the funder's own portal before you plan around it.</p>
+    <p>Source and self-host notes: <span class="mono">github.com/bestwurld23/bestwurld23</span> &rarr; <span class="mono">alignment-deed/</span></p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ======================= RUBRIC ======================= */
+/* Six weighted axes. Monopoly deed groups carry the axis identity so a score
+   is recognisable by colour before it is read. */
+const AXES = [
+  { id:"mission", label:"Mission fit", weight:.26, bg:"--deed-navy", ink:"#ffffff",
+    def:"How closely the funder's stated purpose, priorities and review criteria match this organization's actual mission and current programs. Not what it could pivot to." },
+  { id:"place", label:"People & place", weight:.14, bg:"--deed-sky", ink:"#07100a",
+    def:"Whether the populations and geography the funder requires are the ones this organization already serves and can document serving." },
+  { id:"capacity", label:"Capacity & budget", weight:.20, bg:"--deed-orange", ink:"#07100a",
+    def:"Whether the organization can absorb and spend the award: budget size against award size, staffing, cash flow under reimbursement, and any match or cost-share requirement." },
+  { id:"evidence", label:"Evidence & outcomes", weight:.16, bg:"--deed-green", ink:"#07100a",
+    def:"Whether the organization already holds the track record, data and evaluation capability the solicitation asks applicants to show." },
+  { id:"compliance", label:"Compliance readiness", weight:.12, bg:"--deed-yellow", ink:"#07100a",
+    def:"Registrations, audit status, indirect cost rate, procurement and reporting burden against what this funder requires of a direct recipient." },
+  { id:"competition", label:"Competitive position", weight:.12, bg:"--deed-red", ink:"#ffffff",
+    def:"How this applicant reads against the field the solicitation is written to attract, including any stated preference or priority points." }
+];
+const AX = Object.fromEntries(AXES.map(a => [a.id, a]));
+
+const CAPS = [
+  ["uei","UEI / SAM.gov registered"], ["audit","Single audit or audited financials"],
+  ["indirect","Negotiated indirect cost rate"], ["fiscal","Fiscal sponsor available"],
+  ["grants","Dedicated grants staff"], ["match","Can cover a cash match"],
+  ["reimburse","Can float reimbursement"], ["evaluation","Evaluation partner or capability"]
+];
+
+const ROLES = {
+  LEAD:        { label:"Lead applicant",  c:"--deed-green",  ink:"#07100a", note:"Apply in your own name." },
+  CO_APPLICANT:{ label:"Co-applicant",    c:"--deed-navy",   ink:"#ffffff", note:"Apply jointly; split the scope." },
+  SUBRECIPIENT:{ label:"Subrecipient",    c:"--deed-orange", ink:"#07100a", note:"Go in under another lead." },
+  PASS:        { label:"Pass / refer",    c:"--deed-red",    ink:"#ffffff", note:"Not this one. Refer it on." }
+};
+
+/* ======================= STATE ======================= */
+const state = { profile:blankProfile(), rfp:{text:"",funder:"",due:""}, result:null, run:null, example:false };
+let DB=null, USER=null, UID=null, SAMPLE=null, DL=null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp = (n,lo,hi) => Math.max(lo, Math.min(hi, Number.isFinite(+n) ? +n : lo));
+
+function blankProfile(){
+  return { name:"", site:"", status:"501c3", years:"", budget:"", staff:"", geo:"", pop:"",
+           mission:"", programs:"", outcomes:"", funders:"", caps:[] };
+}
+
+/* ---- storage: db when signed in, localStorage otherwise ---- */
+const LS = {
+  get(k){ try { const v = localStorage.getItem("ad:"+k); return v ? JSON.parse(v) : null; } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem("ad:"+k, JSON.stringify(v)); } catch(e){} }
+};
+async function saveProfile(p){
+  LS.set("profile", p);
+  if (DB && UID) { try { await DB.collection("data/users/"+UID).doc("profile").set(p); return "account"; } catch(e){} }
+  return "browser";
+}
+async function loadProfile(){
+  if (DB && UID) {
+    try { const d = await DB.collection("data/users/"+UID).doc("profile").get();
+          if (d && d.exists) return Object.assign(blankProfile(), d.data()); } catch(e){}
+  }
+  return LS.get("profile") ? Object.assign(blankProfile(), LS.get("profile")) : null;
+}
+async function saveRun(run){
+  const local = LS.get("runs") || [];
+  local.unshift(run); LS.set("runs", local.slice(0,40));
+  if (DB && UID) { try { await DB.collection("data/users/"+UID).doc("run_"+run.id).set(run); } catch(e){} }
+}
+async function listRuns(){
+  if (DB && UID) {
+    try {
+      const q = await DB.collection("data/users/"+UID).get();
+      const rows = (q && q.docs ? q.docs : []).filter(d => /^run_/.test(d.id)).map(d => d.data());
+      if (rows.length) return rows.sort((a,b) => (b.id||0) - (a.id||0));
+    } catch(e){}
+  }
+  return LS.get("runs") || [];
+}
+
+/* ======================= PROMPTS ======================= */
+const RFP_CAP = 60000;
+
+function extractPrompt(text){
+  return `Read this organization's own website copy and fill in a grant-readiness profile. Return JSON only.
+
+WEBSITE COPY
+"""
+${text.slice(0, 24000)}
+"""
+
+Rules:
+- Use only what the copy states or clearly implies. Leave a field as "" when the copy does not say. Never invent a budget, a headcount, or an outcome number.
+- "outcomes" collects only figures or results the copy actually claims, verbatim where possible.
+- "status" is one of: 501c3, fiscally-sponsored, 501c4, government, school, tribal, for-profit, unincorporated. Use "" if the copy does not say.
+
+Return exactly:
+{"name":"","status":"","years":"","budget":"","staff":"","geo":"","pop":"","mission":"","programs":"","outcomes":"","funders":""}
+- years, budget, staff: digits only, or "".
+- geo: places served. pop: who is served. mission: one or two sentences in the organization's own words.
+- programs: the named programs and services, semicolon separated.
+- funders: named funders, foundations or agencies credited anywhere in the copy, comma separated.`;
+}
+
+function analysisPrompt(rfpText, p){
+  const axisDefs = AXES.map(a => `- ${a.id} ("${a.label}"): ${a.def}`).join("\n");
+  return `You are a grant strategist advising a small organization on whether to pursue one funding opportunity. You are paid to be accurate, not encouraging. Return JSON only, no prose outside it.
+
+=== ORGANIZATION ===
+Name: ${p.name || "not stated"}
+Legal status: ${p.status || "not stated"}
+Years operating: ${p.years || "not stated"}
+Annual budget (USD): ${p.budget || "not stated"}
+Staff FTE: ${p.staff || "not stated"}
+Geography served: ${p.geo || "not stated"}
+Populations served: ${p.pop || "not stated"}
+Mission: ${p.mission || "not stated"}
+Programs: ${p.programs || "not stated"}
+Evidenced outcomes: ${p.outcomes || "not stated"}
+Past funders: ${p.funders || "not stated"}
+Compliance readiness (only these are confirmed in place): ${p.caps.length ? p.caps.map(c => (CAPS.find(x => x[0]===c)||[,c])[1]).join("; ") : "none confirmed"}
+
+=== OPPORTUNITY (verbatim, may be truncated) ===
+"""
+${rfpText.slice(0, RFP_CAP)}
+"""
+
+=== HOW TO JUDGE ===
+${axisDefs}
+
+Scoring discipline:
+- Score each axis 0-100 against its own definition. 70+ means a reviewer would see the fit without being told. 40-69 means it has to be argued. Below 40 means it is a stretch. Most real pairings land between 35 and 70; do not inflate.
+- Every finding must rest on words from the opportunity text or the organization profile. Quote the opportunity in "evidence" (under 25 words, verbatim). If the text does not address something, say "not stated in the solicitation" and score on what is there.
+- Absent compliance items are a real cost. Anything not listed as confirmed above is not in place.
+- Call a blocker "hard" only when the solicitation states a requirement this organization fails right now. Everything else is "soft".
+- Opportunities under "leads" are recollection, not a live database: give the recurring program or funder family, and set confidence to "low" unless you are sure the program exists and recurs. Never state a deadline for a lead.
+
+Return exactly this JSON:
+{"rfp":{"funder":"","program":"","awardMin":0,"awardMax":0,"awardNote":"","deadline":"","matchRequired":"","eligibleApplicants":"","family":"","issueAreas":[""]},
+ "headline":"",
+ "modelRole":"LEAD|CO_APPLICANT|SUBRECIPIENT|PASS",
+ "rationale":"",
+ "axes":[{"id":"mission","score":0,"finding":"","evidence":""}],
+ "blockers":[{"severity":"hard|soft","issue":"","whatToDo":""}],
+ "partner":{"needed":true,"profile":"","theyBring":"","youBring":"","split":"","whereToLook":""},
+ "language":{"terms":[{"term":"","theirMeaning":"","yourPhrasing":""}],"opening":"","say":[""],"avoid":[""],"themes":[""]},
+ "nextSteps":[""],
+ "leads":[{"program":"","funder":"","why":"","cycle":"","keywords":"","confidence":"high|medium|low"}]}
+
+Field notes:
+- awardMin/awardMax: dollars as integers, 0 if the text does not say. awardNote: the award language verbatim, short.
+- family: the funding family in a few words, e.g. "federal workforce formula pass-through" or "regional community foundation responsive grant".
+- headline: one sentence, under 20 words, on what decides this.
+- axes: all six ids, once each, in the order given above.
+- language.terms: 8 to 12 rows. "term" is a word or phrase the solicitation itself uses. "theirMeaning" is what the funder means by it in this document. "yourPhrasing" is a specific sentence fragment this organization can honestly write using that term, drawing on its real programs.
+- language.opening: 110 to 160 words. The opening paragraph of the narrative, in this organization's voice, using the solicitation's vocabulary and naming its real programs and geography. No placeholders, no brackets.
+- say: 5 things to foreground. avoid: 5 framings that will cost points with this reviewer. themes: the themes the solicitation requires every applicant to address.
+- nextSteps: 4 to 6 concrete actions in order, each doable this month.
+- leads: 4 to 6 other opportunities or funder families worth checking.`;
+}
+
+/* ======================= SCORING (the page's own arithmetic) ======================= */
+function deriveRole(axes, hardCount){
+  const g = id => (axes.find(a => a.id===id)||{score:0}).score;
+  const m=g("mission"), cap=g("capacity"), comp=g("compliance"), ev=g("evidence"), cp=g("competition");
+  if (m < 40) return "PASS";
+  if (hardCount && m < 55) return "PASS";
+  if (hardCount) return m >= 70 ? "SUBRECIPIENT" : "CO_APPLICANT";
+  if (comp < 45 || cap < 35) return "SUBRECIPIENT";
+  if (cap < 55 || ev < 50 || cp < 40) return "CO_APPLICANT";
+  if (m >= 65 && cap >= 55 && comp >= 55) return "LEAD";
+  return "CO_APPLICANT";
+}
+
+function computeScore(raw, p){
+  const byId = {};
+  (raw.axes||[]).forEach(a => { if (a && AX[a.id] && !byId[a.id]) byId[a.id] = a; });
+  const axes = AXES.map(def => {
+    const got = byId[def.id] || {};
+    return { id:def.id, score:clamp(Math.round(got.score||0),0,100),
+             finding:got.finding||"No finding returned for this axis.", evidence:got.evidence||"" };
+  });
+
+  const budget = +p.budget || 0;
+  const awardMax = +((raw.rfp||{}).awardMax) || 0;
+  const cap = axes.find(a => a.id === "capacity");
+  let ratio = null, capNote = "";
+  if (budget > 0 && awardMax > 0){
+    ratio = awardMax / budget;
+    if (ratio > 1.5 && cap.score > 40){
+      capNote = "Held at 40: the award ceiling is " + ratio.toFixed(1) + "x your annual budget.";
+      cap.score = 40;
+    } else if (ratio > 0.75 && cap.score > 60){
+      capNote = "Held at 60: the award ceiling is " + Math.round(ratio*100) + "% of your annual budget.";
+      cap.score = 60;
+    }
+  }
+
+  const blockers = (raw.blockers||[]).filter(b => b && b.issue);
+  const hard = blockers.filter(b => b.severity === "hard");
+  let total = Math.round(axes.reduce((s,a) => s + a.score * AX[a.id].weight, 0));
+  let totalNote = "";
+  if (hard.length && total > 34){
+    totalNote = "Held at 34 by " + hard.length + " hard blocker" + (hard.length>1?"s":"") + ".";
+    total = 34;
+  }
+  return { axes, total, totalNote, ratio, capNote, blockers, hard, role:deriveRole(axes, hard.length) };
+}
+
+const money = n => (+n ? "$" + Number(n).toLocaleString("en-US") : "");
+function awardLine(r){
+  const lo=+r.awardMin||0, hi=+r.awardMax||0;
+  if (lo && hi) return money(lo) + " – " + money(hi);
+  if (hi) return "up to " + money(hi);
+  if (lo) return "from " + money(lo);
+  return r.awardNote || "not stated";
+}
+
+/* ======================= RENDER ======================= */
+function row(k,v){ return v ? '<li><span class="k">'+esc(k)+'</span><span class="d"></span><span class="v">'+esc(v)+'</span></li>' : ""; }
+
+function renderResult(){
+  const box = $("#result");
+  if (!state.result){ box.innerHTML = ""; return; }
+  const { raw, s } = state.result;
+  const r = raw.rfp || {};
+  const role = ROLES[s.role] || ROLES.CO_APPLICANT;
+  const ex = state.example ? '<span class="ex">Example run</span>' : "";
+
+  /* verdict deed, styled as a title deed: colour band, then the rent table */
+  let h = '<section><div class="sec-h"><div><h2>The verdict</h2>'
+    + '<p>The role comes from rules on the six scores below, not from the model\'s own recommendation.</p></div>'
+    + '<div style="display:flex;gap:8px;align-items:center">' + ex
+    + '<button class="btn sm" id="exportBtn">Export brief</button>'
+    + '<button class="btn sm" id="saveRunBtn">Save run</button></div></div>'
+    + '<div class="deed"><div class="band" style="background:var(' + role.c + ');color:' + role.ink
+    + '"><span class="t">' + esc(r.program || "Untitled opportunity") + '</span>'
+    + '<span class="s">' + esc(r.funder || state.rfp.funder || "Funder not stated") + '</span></div>'
+    + '<div class="verdict"><div class="vb">'
+    + '<p class="lbl" style="margin-bottom:4px">Recommended role</p>'
+    + '<p class="role" style="color:var(' + role.c + ')">' + esc(role.label) + '</p>'
+    + '<p style="margin-top:6px;color:var(--ink-dim);font-size:13px">' + esc(role.note) + '</p>'
+    + '<p>' + esc(raw.headline || "") + '</p>'
+    + '<p style="color:var(--ink-dim);font-size:13.5px">' + esc(raw.rationale || "") + '</p>'
+    + (raw.modelRole && raw.modelRole !== s.role
+        ? '<p class="note">The model would have said ' + esc((ROLES[raw.modelRole]||{label:raw.modelRole}).label).toLowerCase()
+          + '. The rules above overrode it.</p>' : "")
+    + '</div><div class="meter">'
+    + '<span class="big" style="color:var(' + role.c + ')">' + s.total + '</span>'
+    + '<span class="lbl">Weighted fit / 100</span>'
+    + miniChart(s.axes)
+    + (s.totalNote ? '<span class="note" style="text-align:center;font-size:11px">' + esc(s.totalNote) + '</span>' : "")
+    + '</div></div>'
+    + '<div class="deed-body" style="border-top:2px solid var(--rule)"><ul class="rows">'
+    + row("Award", awardLine(r))
+    + row("Deadline", r.deadline || state.rfp.due || "not stated")
+    + row("Match required", r.matchRequired || "not stated")
+    + row("Eligible applicants", r.eligibleApplicants || "not stated")
+    + row("Funding family", r.family || "")
+    + row("Award vs. your budget", s.ratio ? s.ratio.toFixed(1) + "x annual budget" : "")
+    + row("Issue areas", (r.issueAreas||[]).filter(Boolean).join(", "))
+    + '</ul></div></div></section>';
+
+  /* axis deeds */
+  h += '<section><div class="sec-h"><div><h2>The rubric</h2>'
+    + '<p>Six axes, each weighted. Every finding quotes the solicitation or your profile.</p></div></div>'
+    + '<div class="axes">' + s.axes.map(a => {
+        const d = AX[a.id];
+        return '<div class="deed axis" style="--band-bg:var(' + d.bg + ');--band-ink:' + d.ink + '">'
+          + '<div class="band"><span class="t">' + esc(d.label) + '</span>'
+          + '<span class="sc">' + a.score + '</span></div>'
+          + '<div class="deed-body">'
+          + '<div class="track" role="img" aria-label="' + a.score + ' out of 100"><i style="width:' + a.score + '%"></i></div>'
+          + '<p class="lbl">Weight ' + Math.round(d.weight*100) + '%</p>'
+          + '<p>' + esc(a.finding) + '</p>'
+          + (a.evidence ? '<p class="ev">“' + esc(a.evidence) + '”</p>' : "")
+          + (a.id==="capacity" && s.capNote ? '<p class="ev" style="color:var(--warn);border-left-color:var(--warn)">' + esc(s.capNote) + '</p>' : "")
+          + '</div></div>';
+      }).join("") + '</div></section>';
+
+  /* gates */
+  if (s.blockers.length){
+    h += '<section><div class="sec-h"><div><h2>Gates</h2>'
+      + '<p>A hard gate is a stated requirement you fail today. It caps the score and rules out leading.</p></div></div>'
+      + '<div class="gates">' + s.blockers.map(b => {
+          const hard = b.severity === "hard";
+          return '<div class="gate ' + (hard?"hard":"soft") + '"><div class="gi"><span class="lbl" style="color:var('
+            + (hard?"--crit":"--warn") + ')">' + (hard?"Hard":"Soft") + '</span></div><div class="gt">'
+            + '<b>' + esc(b.issue) + '</b>'
+            + (b.whatToDo ? '<span class="fix">' + esc(b.whatToDo) + '</span>' : "") + '</div></div>';
+        }).join("") + '</div></section>';
+  }
+
+  /* partner */
+  const pt = raw.partner || {};
+  if (pt.needed || s.role !== "LEAD"){
+    h += '<section><div class="sec-h"><div><h2>The partner play</h2>'
+      + '<p>What the other side of this application has to bring, and what you put on the table.</p></div></div>'
+      + '<div class="deed"><div class="band" style="background:var(--deed-pink);color:#07100a">'
+      + '<span class="t">Joint application</span><span class="s">' + esc(role.label) + '</span></div>'
+      + '<div class="deed-body"><ul class="rows">'
+      + row("Partner profile", pt.profile) + row("They bring", pt.theyBring)
+      + row("You bring", pt.youBring) + row("How to split", pt.split)
+      + row("Where to look", pt.whereToLook)
+      + '</ul></div></div></section>';
+  }
+
+  /* language kit */
+  const lg = raw.language || {};
+  const terms = (lg.terms||[]).filter(t => t && t.term);
+  h += '<section><div class="sec-h"><div><h2>Language kit</h2>'
+    + '<p>The solicitation\'s own vocabulary, mapped to sentences you can honestly write.</p></div></div>';
+  if (terms.length){
+    h += '<div class="deed"><div class="band" style="background:var(--deed-brown);color:#ffffff">'
+      + '<span class="t">Their words, your sentences</span><span class="s">' + terms.length + ' terms</span></div>'
+      + '<div class="deed-body"><div class="tw"><table class="terms"><thead><tr>'
+      + '<th>Their term</th><th>What they mean by it</th><th>How you say it</th></tr></thead><tbody>'
+      + terms.map(t => '<tr><td>' + esc(t.term) + '</td><td>' + esc(t.theirMeaning) + '</td><td>' + esc(t.yourPhrasing) + '</td></tr>').join("")
+      + '</tbody></table></div></div></div>';
+  }
+  h += '<div class="kit">';
+  if (lg.opening){
+    h += '<div class="deed" style="grid-column:1/-1"><div class="band" style="background:var(--bg-sunk);color:var(--ink)">'
+      + '<span class="t">Opening paragraph</span>'
+      + '<button class="btn sm" id="copyOpen">Copy</button></div>'
+      + '<div class="deed-body"><p class="draft" id="openText">' + esc(lg.opening) + '</p>'
+      + '<p class="note">A draft in your voice using their vocabulary. Check every claim against your own records before it goes in.</p></div></div>';
+  }
+  const list = (cls, items) => '<ul class="ul ' + cls + '">' + items.filter(Boolean).map(x => '<li><span>' + esc(x) + '</span></li>').join("") + '</ul>';
+  if ((lg.say||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-green);color:#07100a"><span class="t">Foreground this</span></div><div class="deed-body">' + list("say", lg.say) + '</div></div>';
+  if ((lg.avoid||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-red);color:#ffffff"><span class="t">Costs you points</span></div><div class="deed-body">' + list("avoid", lg.avoid) + '</div></div>';
+  if ((lg.themes||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-sky);color:#07100a"><span class="t">Themes they require</span></div><div class="deed-body">' + list("say", lg.themes) + '</div></div>';
+  h += '</div></section>';
+
+  /* next steps */
+  if ((raw.nextSteps||[]).length){
+    h += '<section><div class="sec-h"><div><h2>This month</h2></div></div>'
+      + '<div class="deed"><div class="deed-body">' + list("steps", raw.nextSteps) + '</div></div></section>';
+  }
+
+  /* leads */
+  const leads = (raw.leads||[]).filter(l => l && l.program);
+  if (leads.length){
+    h += '<section><div class="sec-h"><div><h2>Look at these next</h2>'
+      + '<p>Recollection, not a live feed. Nothing here is confirmed open &mdash; each card carries the searches that settle it.</p></div></div>'
+      + '<div class="leads">' + leads.map(l => {
+          const q = encodeURIComponent(l.keywords || l.program || "");
+          const cf = ["high","medium","low"].includes(l.confidence) ? l.confidence : "low";
+          return '<div class="deed lead"><div class="band" style="background:var(--bg-sunk);color:var(--ink)">'
+            + '<span class="t">' + esc(l.program) + '</span>'
+            + '<span class="conf ' + cf + '">' + cf + '</span></div><div class="deed-body">'
+            + '<p class="lbl">' + esc(l.funder || "Funder not named") + '</p>'
+            + '<p>' + esc(l.why || "") + '</p>'
+            + (l.cycle ? '<p class="ev">Cycle: ' + esc(l.cycle) + '</p>' : "")
+            + '<div class="links">'
+            + '<a class="btn sm" href="https://www.grants.gov/search-grants?keyword=' + q + '" target="_blank" rel="noopener">Grants.gov</a>'
+            + '<a class="btn sm" href="https://sam.gov/search/?keywords=' + q + '" target="_blank" rel="noopener">SAM.gov</a>'
+            + '<a class="btn sm" href="https://www.usaspending.gov/search" target="_blank" rel="noopener">Past awardees</a>'
+            + '</div>'
+            + (l.keywords ? '<p class="note mono">Search: ' + esc(l.keywords) + '</p>' : "")
+            + '</div></div>';
+        }).join("") + '</div></section>';
+  }
+
+  box.innerHTML = h;
+  wireResult();
+}
+
+/* six bars, 0-100, with a 50 gridline */
+function miniChart(axes){
+  return '<div style="width:100%;max-width:140px;margin-top:10px">'
+    + '<div style="position:relative;height:46px;display:flex;align-items:flex-end;gap:3px;'
+    + 'border-bottom:1px solid var(--rule)">'
+    + '<div style="position:absolute;left:0;right:0;bottom:23px;border-top:1px dashed var(--rule)"></div>'
+    + axes.map(a => '<div title="' + esc(AX[a.id].label) + ': ' + a.score + '" style="flex:1;min-width:0;height:'
+        + Math.max(2, a.score) + '%;background:var(' + AX[a.id].bg + ')"></div>').join("")
+    + '</div><p class="lbl" style="margin:4px 0 0;font-size:9px;text-align:center">Axes, 0&ndash;100 (dash = 50)</p></div>';
+}
+
+/* ======================= EXAMPLE RUN (illustrative, not real data) ======================= */
+const EX_PROFILE = { name:"Northside Digital Works", site:"", status:"501c3", years:"4", budget:"450000",
+  staff:"3", geo:"Joliet and eastern Will County, Illinois",
+  pop:"Residents 16–24 who are not in school or work, and adults re-entering the workforce",
+  mission:"Northside Digital Works runs paid studio apprenticeships that move young people from the edges of the creative economy into technical work they can build a career on.",
+  programs:"Studio Apprenticeship (24-week paid cohort in motion design and front-end build); Open Lab (drop-in equipment and mentoring); Civic Commissions (paid client work for local agencies)",
+  outcomes:"72 apprentices completed since 2022; 61% in paid creative or technical work six months out; 1,400 Open Lab visits in 2025",
+  funders:"Will County Workforce Board, Grand Victoria Foundation, two local family foundations",
+  caps:["fiscal","evaluation"] };
+
+const EX_RFP_TEXT = "SAMPLE SOLICITATION FOR DEMONSTRATION. Digital Navigator and Creative Workforce Capacity Program. The State Broadband Office invites applications from eligible lead applicants to expand digital navigation and creative-technology workforce capacity in persistently underserved regions. Awards range from $250,000 to $1,200,000 over a 24-month period of performance. A 20% non-federal cash match is required; in-kind contributions may not be counted toward match. Eligible lead applicants must serve a contiguous service area of no fewer than four counties, must hold an active UEI registration, and must submit three consecutive years of audited financial statements. Subrecipient arrangements are permitted and encouraged where they extend reach into rural census tracts. Review criteria: demonstrated digital navigation capacity (30 points); workforce outcomes with longitudinal wage data (25 points); regional coalition structure and governance (20 points); sustainability beyond the period of performance (15 points); organizational and financial management (10 points). Priority points will be awarded to applications demonstrating a formal regional coalition with signed memoranda of understanding across at least three counties. Reimbursement is on a cost-incurred basis with quarterly draw requests.";
+
+const EX_RAW = {
+  rfp:{ funder:"State Broadband Office", program:"Digital Navigator and Creative Workforce Capacity Program",
+    awardMin:250000, awardMax:1200000, awardNote:"$250,000 to $1,200,000 over 24 months",
+    deadline:"not stated in the excerpt", matchRequired:"20% non-federal cash match; in-kind not counted",
+    eligibleApplicants:"Lead applicants serving a contiguous area of four or more counties",
+    family:"State pass-through of federal broadband and digital equity funds",
+    issueAreas:["digital equity","workforce development","creative economy","rural access"] },
+  headline:"The mission fits almost exactly; the four-county footprint and the cash match do not.",
+  modelRole:"CO_APPLICANT",
+  rationale:"This solicitation is written for the work Northside already does, and the review criteria reward its apprenticeship outcomes directly. But two stated requirements fail today: the service area covers one county, and the 20% cash match on a seven-figure ceiling exceeds what a $450,000 organization can front under cost-reimbursement. The path in is as a named subrecipient on a regional coalition, where Northside's completion and placement data become the coalition's workforce-outcomes score.",
+  axes:[
+    {id:"mission",score:84,finding:"The program's two stated aims, digital navigation and creative-technology workforce capacity, map onto Open Lab and the Studio Apprenticeship with no repositioning needed.",evidence:"expand digital navigation and creative-technology workforce capacity"},
+    {id:"place",score:38,finding:"Joliet and eastern Will County is one county. The solicitation sets a four-county floor for lead applicants and reserves priority points for three-county coalitions, so geography is the binding constraint.",evidence:"a contiguous service area of no fewer than four counties"},
+    {id:"capacity",score:52,finding:"The ceiling is more than double annual revenue, the match is cash only, and draws are quarterly on costs already incurred. Three FTE cannot carry a 24-month regional award on top of current cohorts.",evidence:"Reimbursement is on a cost-incurred basis with quarterly draw requests"},
+    {id:"evidence",score:76,finding:"Completion and six-month placement figures are strong and directly answer a 25-point criterion, but that criterion asks for longitudinal wage data, which is not among the outcomes on file.",evidence:"workforce outcomes with longitudinal wage data (25 points)"},
+    {id:"compliance",score:31,finding:"No UEI registration and no audited financials are confirmed. Both are stated requirements for a lead applicant, and three years of audits cannot be produced inside one cycle.",evidence:"must hold an active UEI registration, and must submit three consecutive years"},
+    {id:"competition",score:44,finding:"The priority-points structure is written for established regional coalitions with signed MOUs. Against that field a single-county applicant reads as a partner, not a lead.",evidence:"Priority points will be awarded to applications demonstrating a formal regional coalition"}
+  ],
+  blockers:[
+    {severity:"hard",issue:"Service area is one county against a stated four-county floor for lead applicants.",whatToDo:"Join a coalition that already spans Will, Kankakee, Grundy and Kendall rather than assembling one for this deadline."},
+    {severity:"hard",issue:"Three consecutive years of audited financial statements are required and are not on file.",whatToDo:"Start the first audit now so this requirement stops recurring, and go in as a subrecipient this cycle."},
+    {severity:"soft",issue:"A 20% cash match with in-kind excluded, on a ceiling of $1.2M.",whatToDo:"Negotiate the match against the coalition's total, where your share is proportional to your subaward."},
+    {severity:"soft",issue:"Longitudinal wage data is worth 25 points and is not currently collected.",whatToDo:"Request a wage-record data share from the Will County Workforce Board; it is a one-page agreement and it compounds across future applications."}
+  ],
+  partner:{ needed:true,
+    profile:"A regional intermediary or community college district already holding a multi-county footprint, a UEI, and audited financials.",
+    theyBring:"Eligibility, fiscal compliance, the four-county service area, and the governance structure the priority points reward.",
+    youBring:"The only apprenticeship outcomes in the coalition, a working lab, and the creative-technology scope the funder names but most regional applicants cannot staff.",
+    split:"Ask for a named subaward of 15–25% of total for apprenticeship delivery and navigator training, plus a seat on the coalition governance body so scope cannot be rewritten later.",
+    whereToLook:"The county workforce board's existing partner list, the community college workforce dean, and the regional planning commission's broadband committee." },
+  language:{
+    terms:[
+      {term:"digital navigator",theirMeaning:"A trained person who helps residents get connected, equipped and skilled, tracked as a staffed role rather than a class.",yourPhrasing:"Open Lab mentors already perform digital navigation for roughly 1,400 visits a year; this award formalises three of them as credentialed navigators."},
+      {term:"persistently underserved",theirMeaning:"Census tracts with sustained low adoption, not merely low income.",yourPhrasing:"Northside's lab sits inside two persistently underserved tracts on Joliet's north side, which is where its apprentices come from."},
+      {term:"period of performance",theirMeaning:"The 24 months in which costs must be incurred and drawn.",yourPhrasing:"Two apprenticeship cohorts per year fit inside the 24-month period of performance with no ramp-up quarter."},
+      {term:"regional coalition",theirMeaning:"A governed multi-party structure with signed MOUs, not a letter-of-support list.",yourPhrasing:"Northside enters as a named delivery partner in the coalition's MOU, accountable for the apprenticeship line."},
+      {term:"longitudinal wage data",theirMeaning:"Earnings tracked through state wage records over time, not self-reported salary.",yourPhrasing:"Six-month placement is verified today at 61%; a wage-record agreement with the workforce board extends that to longitudinal earnings."},
+      {term:"sustainability beyond the period of performance",theirMeaning:"Revenue that survives the grant, with named sources.",yourPhrasing:"Civic Commissions bills local agencies for paid client work, which already covers part of apprentice stipends and grows as cohorts do."},
+      {term:"subrecipient",theirMeaning:"An entity carrying out part of the programme under the lead's compliance umbrella.",yourPhrasing:"Northside proposes to serve as a subrecipient for apprenticeship delivery across the coalition's urban tracts."},
+      {term:"non-federal cash match",theirMeaning:"Real dollars from a non-federal source; donated time does not count.",yourPhrasing:"Northside's share of the non-federal cash match is committed from Civic Commissions earned revenue and two local family foundations."},
+      {term:"organizational and financial management",theirMeaning:"The 10-point test of whether you can hold public money.",yourPhrasing:"Northside operates under a fiscal sponsor with audited financials and has completed four years of county workforce contracts without finding."}
+    ],
+    opening:"Northside Digital Works runs paid studio apprenticeships on Joliet's north side, inside two of the persistently underserved census tracts this programme is written to reach. Since 2022, 72 apprentices have completed a 24-week cohort in motion design and front-end build, and 61% were in paid creative or technical work six months later. Our Open Lab mentors already do digital navigation in everything but name, across roughly 1,400 visits last year. We join this application as a named subrecipient in a four-county regional coalition, carrying the apprenticeship and navigator-training scope. What we add to the coalition is the part that is hardest to staff: a working lab with verified workforce outcomes in creative technology, operating continuously for four years in the tracts where adoption is lowest.",
+    say:["Verified completion and placement numbers, early and with the denominators shown",
+      "The lab's physical location inside the underserved tracts the programme names",
+      "Your role as a named subrecipient with a defined scope, not a letter of support",
+      "Earned revenue from Civic Commissions as the sustainability answer",
+      "Four years of county workforce contracts delivered without a finding"],
+    avoid:["Describing the service area as regional when it is one county",
+      "Counting volunteer or in-kind hours toward the cash match",
+      "Calling mentoring digital navigation without mapping it to the staffed role they define",
+      "Self-reported salary figures where they asked for wage records",
+      "Promising a coalition you would have to assemble before the deadline"],
+    themes:["Digital navigation capacity as staffed roles","Workforce outcomes evidenced through wage records",
+      "Coalition governance with signed MOUs","Sustainability after the period of performance",
+      "Reach into rural census tracts"]
+  },
+  nextSteps:[
+    "Call the county workforce board and ask who is assembling a coalition for this programme.",
+    "Request a wage-record data-share agreement so longitudinal earnings exist before the next cycle.",
+    "Get a UEI registration on file; it is free and it unblocks every federal pass-through.",
+    "Price your apprenticeship line as a subaward: cost per apprentice times cohorts over 24 months.",
+    "Commission the first financial audit, so the three-year audit requirement starts counting now."
+  ],
+  leads:[
+    {program:"Digital Equity Capacity Grant Program",funder:"NTIA, via state digital equity offices",why:"Same funding family and the same navigator language, but state plans often fund single-organization subgrants with no multi-county floor.",cycle:"State subgrant rounds following each state's digital equity plan",keywords:"digital equity capacity subgrant digital navigator",confidence:"medium"},
+    {program:"WIOA Title I youth formula funds",funder:"Local workforce development boards",why:"Your 16-24 out-of-school population is the exact WIOA youth definition, and boards contract delivery rather than running it.",cycle:"Board procurement cycles, commonly annual",keywords:"WIOA youth out-of-school work experience provider RFP",confidence:"high"},
+    {program:"Community foundation responsive and capacity grants",funder:"Regional and county community foundations",why:"The right size for a $450,000 organization and the realistic source of the cash match a coalition will ask you to bring.",cycle:"Usually one to three deadlines a year",keywords:"community foundation capacity building grant workforce youth",confidence:"high"},
+    {program:"Creative and arts workforce programs",funder:"State arts council and national arts funders",why:"Creative-economy framing is eligible where pure workforce funders undervalue it, and the apprenticeship model fits their project grants.",cycle:"Annual project grant rounds",keywords:"creative workforce apprenticeship arts council project grant",confidence:"medium"},
+    {program:"Apprenticeship expansion and intermediary grants",funder:"US Department of Labor",why:"Paid cohort structure already resembles a registered apprenticeship, which is what these awards are built to scale.",cycle:"Periodic national competitions",keywords:"apprenticeship building America intermediary expansion",confidence:"medium"}
+  ]
+};
+
+/* ======================= CLAUDE CALLS ======================= */
+function setStatus(el, msg, isErr){
+  const n = $(el); if (!n) return;
+  n.className = "status" + (isErr ? " err" : "");
+  n.innerHTML = msg ? "<b>" + esc(msg) + "</b>" : "";
+}
+function sampleUnavailable(el){
+  setStatus(el, "Claude is not reachable from this view, so a new reading cannot run. The example below still shows the full output.", true);
+}
+
+async function runAnalysis(){
+  const text = $("#rfpText").value.trim();
+  if (text.length < 200){ setStatus("#status", "Paste more of the solicitation. Under 200 characters there is nothing to score.", true); return; }
+  if (!SAMPLE){ sampleUnavailable("#status"); return; }
+  const p = state.profile;
+  if (!p.mission && !p.programs){ setStatus("#status", "Fill in the organization profile first, on the Org tab.", true); return; }
+
+  const btn = $("#runBtn"); btn.disabled = true;
+  setStatus("#status", "Reading " + text.length.toLocaleString("en-US") + " characters against six axes...");
+  try {
+    const raw = await SAMPLE.json(analysisPrompt(text, p), { modelTier:"complex" });
+    if (!raw || !Array.isArray(raw.axes)) throw new Error("The reading came back in a shape the page could not use. Try again.");
+    const s = computeScore(raw, p);
+    state.rfp = { text, funder:$("#rfpFunder").value.trim(), due:$("#rfpDue").value.trim() };
+    if (state.rfp.funder && !raw.rfp.funder) raw.rfp.funder = state.rfp.funder;
+    if (state.rfp.due && !raw.rfp.deadline) raw.rfp.deadline = state.rfp.due;
+    state.result = { raw, s }; state.example = false;
+    renderResult();
+    setStatus("#status", "Read. " + s.total + "/100, " + (ROLES[s.role]||{}).label.toLowerCase() + ".");
+    $("#result").scrollIntoView({ behavior:"smooth", block:"start" });
+  } catch(err){
+    const code = err && err.code;
+    setStatus("#status",
+      code === "not_granted" ? "This view is not allowed to call Claude, so the reading cannot run."
+      : code === "rate_limited" ? "Rate limited. Wait a minute and read it again."
+      : (err && err.message) || "The reading failed. Try again.", true);
+  } finally { btn.disabled = false; }
+}
+
+async function runExtract(){
+  const text = $("#siteText").value.trim();
+  if (text.length < 120){ setStatus("#exStatus", "Paste more of your site copy. Under 120 characters there is nothing to read.", true); return; }
+  if (!SAMPLE){ sampleUnavailable("#exStatus"); return; }
+  const btn = $("#extractBtn"); btn.disabled = true;
+  setStatus("#exStatus", "Reading your copy...");
+  try {
+    const got = await SAMPLE.json(extractPrompt(text), { modelTier:"default" });
+    const map = { name:"#oName", years:"#oYears", budget:"#oBudget", staff:"#oStaff", geo:"#oGeo",
+                  pop:"#oPop", mission:"#oMission", programs:"#oPrograms", outcomes:"#oOutcomes", funders:"#oFunders" };
+    let filled = 0;
+    Object.keys(map).forEach(k => {
+      const v = got && got[k]; const el = $(map[k]);
+      if (v && el && !el.value){ el.value = v; filled++; }
+    });
+    if (got && got.status && ["501c3","fiscally-sponsored","501c4","government","school","tribal","for-profit","unincorporated"].includes(got.status)) $("#oStatus").value = got.status;
+    setStatus("#exStatus", filled ? "Filled " + filled + " field" + (filled>1?"s":"") + ". Correct anything it got wrong, then save."
+      : "Nothing new to fill. The fields already have values; clear one to let it be read again.");
+  } catch(err){
+    setStatus("#exStatus", err && err.code === "rate_limited" ? "Rate limited. Try again in a minute."
+      : (err && err.message) || "Could not read the copy. Try again.", true);
+  } finally { btn.disabled = false; }
+}
+
+/* ======================= EXPORT ======================= */
+function briefMarkdown(){
+  const { raw, s } = state.result, r = raw.rfp || {}, lg = raw.language || {}, pt = raw.partner || {};
+  const L = [];
+  L.push("# " + (r.program || "Opportunity reading"));
+  L.push("**Funder:** " + (r.funder || "not stated") + "  ");
+  L.push("**Award:** " + awardLine(r) + "  ");
+  L.push("**Deadline:** " + (r.deadline || "not stated") + "  ");
+  L.push("**Match:** " + (r.matchRequired || "not stated") + "\n");
+  L.push("## Verdict: " + (ROLES[s.role]||{}).label + " — " + s.total + "/100");
+  if (s.totalNote) L.push("_" + s.totalNote + "_");
+  L.push("\n" + (raw.headline||"") + "\n\n" + (raw.rationale||"") + "\n");
+  L.push("## Rubric");
+  s.axes.forEach(a => {
+    L.push("### " + AX[a.id].label + " — " + a.score + "/100 (weight " + Math.round(AX[a.id].weight*100) + "%)");
+    L.push(a.finding);
+    if (a.evidence) L.push("> " + a.evidence);
+    L.push("");
+  });
+  if (s.capNote) L.push("_" + s.capNote + "_\n");
+  if (s.blockers.length){
+    L.push("## Gates");
+    s.blockers.forEach(b => L.push("- **" + (b.severity==="hard"?"Hard":"Soft") + ":** " + b.issue + (b.whatToDo ? "  \n  " + b.whatToDo : "")));
+    L.push("");
+  }
+  if (pt.profile){
+    L.push("## Partner play");
+    [["Partner profile",pt.profile],["They bring",pt.theyBring],["You bring",pt.youBring],
+     ["How to split",pt.split],["Where to look",pt.whereToLook]].forEach(([k,v]) => { if (v) L.push("- **" + k + ":** " + v); });
+    L.push("");
+  }
+  L.push("## Language kit");
+  (lg.terms||[]).forEach(t => { if (t && t.term) L.push("- **" + t.term + "** — " + (t.theirMeaning||"") + "  \n  Say: " + (t.yourPhrasing||"")); });
+  if (lg.opening) L.push("\n### Draft opening\n\n" + lg.opening);
+  if ((lg.say||[]).length) L.push("\n### Foreground\n" + lg.say.map(x => "- " + x).join("\n"));
+  if ((lg.avoid||[]).length) L.push("\n### Avoid\n" + lg.avoid.map(x => "- " + x).join("\n"));
+  if ((lg.themes||[]).length) L.push("\n### Themes they require\n" + lg.themes.map(x => "- " + x).join("\n"));
+  if ((raw.nextSteps||[]).length) L.push("\n## This month\n" + raw.nextSteps.map((x,i) => (i+1) + ". " + x).join("\n"));
+  if ((raw.leads||[]).length){
+    L.push("\n## Look at these next");
+    raw.leads.forEach(l => { if (l && l.program) L.push("- **" + l.program + "** (" + (l.funder||"funder not named") + ", confidence " + (l.confidence||"low") + ") — " + (l.why||"") + (l.keywords ? "  \n  Search: " + l.keywords : "")); });
+  }
+  L.push("\n---\n\nScored by Alignment Deed against " + (state.profile.name || "this organization") +
+    ". Leads are unverified starting points, not confirmed open opportunities.");
+  return L.join("\n");
+}
+
+/* ======================= VIEWS & WIRING ======================= */
+function fillOrgForm(p){
+  const m = { "#oName":"name","#oSite":"site","#oStatus":"status","#oYears":"years","#oBudget":"budget",
+    "#oStaff":"staff","#oGeo":"geo","#oPop":"pop","#oMission":"mission","#oPrograms":"programs",
+    "#oOutcomes":"outcomes","#oFunders":"funders" };
+  Object.keys(m).forEach(sel => { const el = $(sel); if (el) el.value = p[m[sel]] || ""; });
+  $("#capChips").querySelectorAll("button").forEach(b => {
+    const on = p.caps.includes(b.dataset.cap);
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function readOrgForm(){
+  const g = s => ($(s) ? $(s).value.trim() : "");
+  return { name:g("#oName"), site:g("#oSite"), status:g("#oStatus"), years:g("#oYears"),
+    budget:g("#oBudget"), staff:g("#oStaff"), geo:g("#oGeo"), pop:g("#oPop"), mission:g("#oMission"),
+    programs:g("#oPrograms"), outcomes:g("#oOutcomes"), funders:g("#oFunders"),
+    caps:[...$("#capChips").querySelectorAll('button[aria-pressed="true"]')].map(b => b.dataset.cap) };
+}
+function renderOrgSummary(){
+  const p = state.profile;
+  const complete = !!(p.name && p.mission && p.geo && p.budget);
+  $("#orgSummary").innerHTML = complete
+    ? row("Organization", p.name) + row("Status", p.status) + row("Budget", money(p.budget))
+      + row("Staff FTE", p.staff) + row("Geography", p.geo) + row("Serves", p.pop)
+    : '<li style="border:0;padding:0"><span style="font-size:13px;color:var(--ink-dim)">Nothing saved yet. The Org tab takes about four minutes, or paste your website copy and let it fill the fields.</span></li>';
+  $("#orgHint").textContent = complete
+    ? "Scored against this profile. Edit it any time."
+    : "The rubric scores the RFP against this profile. Fill it in once.";
+  $("#orgChips").innerHTML = CAPS.map(([k,lab]) =>
+    '<span class="chip' + (p.caps.includes(k) ? " on" : "") + '">' + esc(lab) + '</span>').join("");
+}
+function showView(which){
+  [["read","#v-read"],["org","#v-org"],["runs","#v-runs"]].forEach(([k,sel]) => {
+    $(sel).hidden = k !== which;
+    const t = $("#tab-" + k); t.setAttribute("aria-selected", k === which ? "true" : "false");
+  });
+  if (which === "runs") renderRuns();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+async function renderRuns(){
+  const rows = await listRuns();
+  $("#runsList").innerHTML = rows.length
+    ? '<div class="leads">' + rows.map(r =>
+        '<div class="deed"><div class="band" style="background:var(' + ((ROLES[r.role]||ROLES.PASS).c)
+        + ');color:' + ((ROLES[r.role]||ROLES.PASS).ink) + '"><span class="t">' + esc(r.program || "Untitled") + '</span>'
+        + '<span class="s">' + r.total + '/100</span></div><div class="deed-body">'
+        + '<p class="lbl">' + esc(r.funder || "Funder not stated") + ' &middot; ' + esc(r.when || "") + '</p>'
+        + '<p style="font-size:13px;margin:8px 0">' + esc(r.headline || "") + '</p>'
+        + '<button class="btn sm" data-open="' + esc(r.id) + '">Open this run</button></div></div>').join("")
+      + '</div>'
+    : '<p class="note">No saved runs yet. Read an RFP, then press Save run.</p>';
+  $("#runsList").querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => {
+    const r = rows.find(x => String(x.id) === b.dataset.open);
+    if (!r || !r.raw) return;
+    state.result = { raw:r.raw, s:computeScore(r.raw, r.profile || state.profile) };
+    state.example = false; renderResult(); showView("read");
+  }));
+  renderLibrary();
+}
+
+async function renderLibrary(){
+  const box = $("#libList");
+  if (!DB){ box.innerHTML = '<p class="note">Sign in to see what other organizations have published here.</p>'; return; }
+  try {
+    const q = await DB.collection("library").orderBy("id","desc").limit(24).get();
+    const rows = (q && q.docs ? q.docs : []).map(d => d.data()).filter(Boolean);
+    box.innerHTML = rows.length
+      ? '<div class="leads">' + rows.map(r =>
+          '<div class="deed"><div class="band" style="background:var(--bg-sunk);color:var(--ink)">'
+          + '<span class="t">' + esc(r.program || "Untitled") + '</span>'
+          + '<span class="s">' + esc(r.family || "") + '</span></div><div class="deed-body">'
+          + '<p class="lbl">' + esc(r.funder || "Funder not stated") + '</p>'
+          + '<p style="font-size:13px">' + esc((r.issueAreas||[]).join(", ")) + '</p>'
+          + (r.award ? '<p class="ev">' + esc(r.award) + '</p>' : "") + '</div></div>').join("") + '</div>'
+      : '<p class="note">The library is empty. Publishing a reading adds the opportunity here with no organization details attached.</p>';
+  } catch(e){
+    box.innerHTML = '<p class="note">Could not load the library just now.</p>';
+  }
+}
+
+function wireResult(){
+  const ex = $("#exportBtn"), sv = $("#saveRunBtn"), co = $("#copyOpen");
+  if (co) co.addEventListener("click", async () => {
+    const t = ($("#openText")||{}).textContent || "";
+    try { await navigator.clipboard.writeText(t); co.textContent = "Copied"; setTimeout(() => co.textContent = "Copy", 1600); }
+    catch(e){ const n = $("#openText"); if (n){ const r = document.createRange(); r.selectNodeContents(n);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r); co.textContent = "Selected"; setTimeout(() => co.textContent = "Copy", 1600); } }
+  });
+  if (ex) ex.addEventListener("click", async () => {
+    if (!DL){ ex.textContent = "No saving here"; setTimeout(() => ex.textContent = "Export brief", 2200); return; }
+    const name = ((state.result.raw.rfp||{}).program || "opportunity").toLowerCase()
+      .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,54) || "opportunity";
+    try { await DL.save({ filename: name + "-brief.md", data: briefMarkdown() }); ex.textContent = "Saved"; }
+    catch(e){ ex.textContent = "Not saved"; }
+    setTimeout(() => ex.textContent = "Export brief", 2200);
+  });
+  if (sv) sv.addEventListener("click", async () => {
+    if (state.example){ sv.textContent = "Example only"; setTimeout(() => sv.textContent = "Save run", 2200); return; }
+    const { raw, s } = state.result, r = raw.rfp || {};
+    const run = { id:Date.now(), when:new Date().toISOString().slice(0,10), program:r.program||"Untitled",
+      funder:r.funder||"", headline:raw.headline||"", total:s.total, role:s.role, raw, profile:state.profile };
+    await saveRun(run);
+    sv.textContent = "Saved";
+    if (DB){ try { await DB.collection("library").doc("rfp_"+run.id).set({ id:run.id, program:run.program,
+      funder:run.funder, family:r.family||"", award:awardLine(r), issueAreas:(r.issueAreas||[]).filter(Boolean) }); } catch(e){} }
+    setTimeout(() => sv.textContent = "Save run", 2200);
+  });
+}
+
+/* ======================= DIGITAL RAIN (header only) ======================= */
+function rain(){
+  const c = $("#rain"); if (!c) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ctx = c.getContext("2d"); let w=0, h=0, cols=[], step=14, raf=null;
+  const GLYPH = "01アカサタナハマヤラワ$§#%";
+  function size(){
+    const r = c.getBoundingClientRect(); w = c.width = Math.max(1, r.width|0); h = c.height = Math.max(1, r.height|0);
+    cols = new Array(Math.ceil(w/step)).fill(0).map(() => Math.random() * -40);
+  }
+  function tick(){
+    const style = getComputedStyle(document.documentElement);
+    ctx.fillStyle = style.getPropertyValue("--bg-sunk").trim() || "#040706";
+    ctx.globalAlpha = .13; ctx.fillRect(0,0,w,h);
+    ctx.globalAlpha = 1; ctx.font = "12px ui-monospace, monospace";
+    ctx.fillStyle = style.getPropertyValue("--phosphor").trim() || "#4ef08a";
+    for (let i=0;i<cols.length;i++){
+      const y = cols[i]*step;
+      if (y > 0 && y < h+step) ctx.fillText(GLYPH[(Math.random()*GLYPH.length)|0], i*step, y);
+      cols[i] = y > h + Math.random()*260 ? 0 : cols[i] + .32;
+    }
+    raf = requestAnimationFrame(tick);
+  }
+  size(); addEventListener("resize", size, { passive:true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden){ cancelAnimationFrame(raf); raf = null; } else if (!raf) tick();
+  });
+  tick();
+}
+
+/* ======================= BOOT ======================= */
+function boot(){
+  $("#capChips").innerHTML = CAPS.map(([k,lab]) =>
+    '<button type="button" class="chip" data-cap="' + k + '" aria-pressed="false">' + esc(lab) + '</button>').join("");
+  $("#capChips").addEventListener("click", e => {
+    const b = e.target.closest("button[data-cap]"); if (!b) return;
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on ? "true" : "false"); b.classList.toggle("on", on);
+  });
+
+  ["read","org","runs"].forEach(k => $("#tab-"+k).addEventListener("click", () => showView(k)));
+  $("#editOrg").addEventListener("click", () => showView("org"));
+  $("#runBtn").addEventListener("click", runAnalysis);
+  $("#extractBtn").addEventListener("click", runExtract);
+  $("#saveOrg").addEventListener("click", async () => {
+    state.profile = readOrgForm();
+    const where = await saveProfile(state.profile);
+    renderOrgSummary();
+    setStatus("#saveStatus", where === "account" ? "Saved to your account." : "Saved in this browser only.");
+  });
+  $("#themeBtn").addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme");
+    const dark = cur ? cur === "dark" : !matchMedia("(prefers-color-scheme: light)").matches;
+    document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+    LS.set("theme", dark ? "light" : "dark");
+  });
+  $("#loadSample").addEventListener("click", () => {
+    $("#rfpText").value = EX_RFP_TEXT; $("#rfpFunder").value = EX_RAW.rfp.funder;
+    state.example = true;
+    state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE) };
+    renderResult();
+    setStatus("#status", "Example loaded. Read it again to score this text against your own profile.");
+  });
+
+  const t = LS.get("theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  fillOrgForm(state.profile); renderOrgSummary();
+
+  /* open in a working state: the example reading, clearly marked */
+  state.example = true;
+  state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE) };
+  renderResult();
+  rain();
+
+  /* capabilities resolve later, or never */
+  const grab = async name => {
+    try { const u = window.claude && window.claude.use; return u ? await u.call(window.claude, name) : null; }
+    catch(e){ return null; }
+  };
+  (async () => {
+    [SAMPLE, DB, USER, DL] = await Promise.all(["sample","db","user","downloads"].map(grab));
+    if (USER){ try { UID = await USER.id(); } catch(e){} }
+    const saved = await loadProfile();
+    if (saved){ state.profile = saved; fillOrgForm(saved); renderOrgSummary(); }
+    if (!SAMPLE) setStatus("#status", "Claude is not reachable from this view, so new readings cannot run here. The example below is complete.", true);
+    renderLibrary();
+  })();
+}
+window.claude = window.claude || {};
+boot();
+</script>

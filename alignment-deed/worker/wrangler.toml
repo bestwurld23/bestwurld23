@@ -1,0 +1,12 @@
+name = "alignment-deed"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# The Claude model the worker calls. Set it to a current model id.
+MODEL = ""
+# Lock this to your own front end once you have one. "*" is open to any origin.
+ALLOWED_ORIGIN = "*"
+
+# Set the key as a secret, never in this file:
+#   wrangler secret put ANTHROPIC_API_KEY
