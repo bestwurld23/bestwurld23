@@ -48,7 +48,9 @@ to the Chamber Foundation unless the request clearly says otherwise.
 - CEJA workforce region: **Chicago (South)**. Greater Englewood spans Englewood
   and West Englewood, so Chicago (Southwest and West) may also be arguable.
 
-**Confirmed:** GATA and SAM registrations are in place.
+**Confirmed:** GATA and SAM registrations, **UEI**, and **audited financials**
+are all in place. The administrative gate is cleared. Program delivery includes
+**virtual reality simulation** for hands-on practice.
 
 ### The IBHE question — likely resolved for CEJA, must be confirmed
 **105 ILCS 426/30** (Private Business and Vocational Schools Act of 2012)
@@ -73,7 +75,10 @@ submission.** IBHE's FAQ indicates an entity applies to be declared exempt.
 - Which **registered apprenticeship sponsor** will sign. NCCER and NABCEP are
   credentials, not apprenticeships; AACA and BCOE are contractor associations.
   The statutory test names all three categories.
-- Audited financials; negotiated indirect rate or de minimis 15% election.
+- Negotiated indirect rate, or elect the de minimis 15% of modified total
+  direct cost. A checkbox, not a negotiation.
+- **Does NCCER + NABCEP map onto the 2027-2029 Clean Jobs Curriculum Framework?**
+  This single question decides Hub versus Climate Works.
 - Relationship to the Greater Englewood Chamber of Commerce: shared staff, cost
   allocation method, lobbying firewall.
 
@@ -95,7 +100,20 @@ Technical assistance sessions (9/29 and 9/30/2026) have passed.
 | 3197-4343 | Clean Jobs Workforce Network (Hubs) | 20 | $50.9M total | up to 3 years |
 | 3137-4342 | Climate Works Pre-apprenticeship | 3 | $16M total, $3M–$6.5M each | 6/2027–5/2030 |
 
-**Direction, set by Jordan (Program Director) on 2026-10-09:**
+**Two different 100-point scales are in play. Do not conflate them.**
+DCEO's official scoresheets are in `ceja/SCORESHEETS.md`. The app's rubric
+(`alignment-deed/RUBRIC.md`) is a decision aid for choosing which to lead; its
+score is not a prediction of DCEO's score.
+
+**Direction, under review as of 2026-10-09.** With compliance confirmed, the app
+now scores **Hub 71/100 LEAD** and **Climate Works 70/100 LEAD** — effectively
+tied, so the choice is strategic, not numeric. The Hub is the easier field
+(~20 awards vs 3), the larger pool ($50.9M vs $16M), scoped to Chicago (South)
+rather than all six counties of IDOT Region 1, permits more than one Hub per
+Chicago region, runs three years with up to two renewal years, and requires no
+registered apprenticeship relationship at all.
+
+Jordan's earlier direction was:
 - **LEAD: Climate Works Pre-apprenticeship (3137-4342)**, Northern Region.
   GECF has in-house instructors and brings partners for barrier reduction.
   Climate Works carries its own Energy Transition Barrier Reduction funding for
@@ -128,10 +146,10 @@ known. Superseded.
 8. The returned JTED award is visible to the same agency. Address it in the
    application rather than letting a reviewer find it.
 
-**Current scoring in the app (Climate Works): 68/100, co-applicant.** The one
-thing holding it below a lead recommendation is compliance readiness, which is
-held down by the unconfirmed IBHE exclusion. Getting that in writing moves the
-rubric to **lead**. That is the highest-leverage call available this week.
+**Where virtual reality earns points on the Hub scoresheet:** Q10 the training
+you would deliver (11), Q12 your delivery model (5), Q11 work-based learning (4).
+It is a real differentiator against a community college running a standard
+classroom.
 
 ## Project in this repo
 
