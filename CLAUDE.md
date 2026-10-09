@@ -18,13 +18,25 @@ to the Chamber Foundation unless the request clearly says otherwise.
   delivers workforce training directly.
 - **Delivers training in-house: 3-4 instructors on staff.** Three years doing
   this work. Partners supply wraparound services, barrier reduction and job
-  placement. Has employer partnerships and is placing people into jobs.
+  placement.
+- **Curriculum: NCCER** (construction industry standard) **and NABCEP PV
+  Associate** (national solar credential), plus life skills and professional
+  development. This is the construction-trades-plus-clean-energy intersection
+  CEJA funds, taught to national standards rather than homegrown.
+- **Outcomes: 60 enrolled, 42 graduated, 23 NABCEP PVA certified and placed.**
+  Wages observed moving from about $25/hr to $40/hr. Retention reported strong,
+  no figure yet. Provenance of these figures (funder, years) not yet pinned —
+  needed, because the JTED award was returned.
+- Employer placement partners: **Knobelsdorff Energy** and **Common Energy**.
+- Contractor association contacts he can reach: **African American Contractors
+  Association** (Omar Shareef, founder/president since 1989, 300+ members) and
+  **BCOE / Black Contractors Owners & Executives**. Both Cook County based.
+- DCEO contacts for the JTED and IBHE question: **Jarol and Terah**.
 - **JTED grant: $305,000 to serve 80 people — awarded, then RETURNED**, because
   the Foundation did not hold **IBHE approval** (Private Business and Vocational
   Schools licensing) to deliver the work. This is the single most important fact
   about their grant history. See the IBHE note below — it very likely does not
   bite on CEJA.
-- Employer placement partners: **Knobelsdorff Energy** and **Common Energy**.
 - Stated capacity to partner into **Will County and elsewhere** for regional reach.
 - Note the gap between this and the public record: searches still describe GECF
   as a business development center, with no training footprint. Reviewers see
@@ -55,9 +67,12 @@ cannot reach ilga.gov or ibhe.org). **Get it in writing from IBHE and DCEO befor
 submission.** IBHE's FAQ indicates an entity applies to be declared exempt.
 
 **Still open — ask, do not assume:**
-- What the 3-4 instructors actually teach (trades content vs. business/digital).
-- Which registered apprenticeship programs, contractors and contractor
-  associations will sign MOUs.
+- **Were the 23 placements into jobs, or into registered apprenticeships?**
+  Climate Works is scored on apprenticeship entry, so this matters more than any
+  other open question.
+- Which **registered apprenticeship sponsor** will sign. NCCER and NABCEP are
+  credentials, not apprenticeships; AACA and BCOE are contractor associations.
+  The statutory test names all three categories.
 - Audited financials; negotiated indirect rate or de minimis 15% election.
 - Relationship to the Greater Englewood Chamber of Commerce: shared staff, cost
   allocation method, lobbying firewall.
@@ -105,10 +120,18 @@ known. Superseded.
 4. Three awards statewide; Cycle 1 Centers hold contracts through May 2027.
 5. Known trades pre-apprenticeship players in the region (Chicago Women in
    Trades, Revolution Workshop, and similar) are likely competitors or partners.
-6. Who holds the Northern Region Climate Works Center today is **unknown**.
+6. **No registered apprenticeship sponsor signed yet.** This is now the largest
+   genuine gap. NCCER Core is widely accepted for advanced standing into
+   registered apprenticeships — that is the argument to make to a sponsor.
+7. Who holds the Northern Region Climate Works Center today is **unknown**.
    Find out — beating an incumbent and replacing one are different applications.
-7. The returned JTED award is visible to the same agency. Address it in the
+8. The returned JTED award is visible to the same agency. Address it in the
    application rather than letting a reviewer find it.
+
+**Current scoring in the app (Climate Works): 68/100, co-applicant.** The one
+thing holding it below a lead recommendation is compliance readiness, which is
+held down by the unconfirmed IBHE exclusion. Getting that in writing moves the
+rubric to **lead**. That is the highest-leverage call available this week.
 
 ## Project in this repo
 
