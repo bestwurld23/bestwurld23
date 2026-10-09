@@ -62,7 +62,14 @@ export default {
         return json({ raw, score: computeScore(raw, profile) });
       }
 
-      return json({ error: "Unknown path. Use /profile or /analyze." }, 404);
+      if (path === "/search") {
+        const keyword = String(body.keyword || "").trim();
+        if (keyword.length < 2) return json({ error: "Supply a keyword of at least 2 characters." }, 400);
+        const out = await searchGrantsGov(keyword, body);
+        return json(out);
+      }
+
+      return json({ error: "Unknown path. Use /profile, /analyze or /search." }, 404);
     } catch (err) {
       return json({ error: String(err && err.message || err) }, 502);
     }
@@ -161,6 +168,62 @@ function toText(html) {
     .replace(/[ \t ]+/g, " ")
     .replace(/\n\s*\n\s*\n+/g, "\n\n")
     .trim();
+}
+
+/* ---------- live opportunity search ----------
+ * The published artifact cannot do this: its sandbox blocks every outbound
+ * request, including to this worker. Search belongs on a server, which is the
+ * main reason this worker exists.
+ *
+ * UNVERIFIED: the grants.gov request and response shapes below are written
+ * from the documented public Search2 API but were not exercised when this was
+ * written, because the authoring environment could not reach api.grants.gov.
+ * The handler therefore returns `raw` alongside the normalized rows, and
+ * tolerates a response that does not match. Check `raw` on your first call and
+ * correct `normalize` if the field names differ.
+ *
+ * Scope: grants.gov is FEDERAL only. Illinois state NOFOs (CEJA, JTED and the
+ * rest) are not listed there; they live on the GATA portal at
+ * grants.illinois.gov and in the CSFA catalog, which publish no open API. For
+ * those, the honest options are a scheduled scrape or a human check.
+ */
+async function searchGrantsGov(keyword, opts){
+  const payload = {
+    keyword,
+    rows: Math.min(Math.max(+opts.rows || 25, 1), 100),
+    oppStatuses: opts.status || "forecasted|posted"
+  };
+  if (opts.agency) payload.agencies = String(opts.agency);
+
+  const res = await fetch("https://api.grants.gov/v1/api/search2", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`grants.gov search failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+
+  const raw = await res.json();
+  return { source: "grants.gov", federalOnly: true, query: payload,
+           results: normalize(raw), raw };
+}
+
+/** Pull a stable row shape out of whatever the API returns. */
+function normalize(raw){
+  const hits = (raw && raw.data && (raw.data.oppHits || raw.data.opportunities))
+            || (raw && raw.oppHits) || [];
+  if (!Array.isArray(hits)) return [];
+  return hits.map(h => ({
+    id: h.id ?? h.oppId ?? null,
+    number: h.number ?? h.oppNumber ?? "",
+    title: h.title ?? h.oppTitle ?? "",
+    agency: h.agency ?? h.agencyName ?? h.agencyCode ?? "",
+    status: h.oppStatus ?? h.status ?? "",
+    openDate: h.openDate ?? "",
+    closeDate: h.closeDate ?? "",
+    url: (h.id ?? h.oppId)
+      ? `https://www.grants.gov/search-results-detail/${h.id ?? h.oppId}`
+      : "https://www.grants.gov/search-grants"
+  }));
 }
 
 /* ---------- the model ---------- */

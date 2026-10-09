@@ -66,6 +66,36 @@ you points, and the themes every applicant must address.
 Funders score on whether you speak their vocabulary. Most small organizations
 lose points to translation, not to merit.
 
+## Why the page cannot search the web, and what can
+
+The published page runs in a sandbox that blocks **every** outbound request —
+not just crawling a website, but any fetch to any host, including to this
+project's own worker. That is a security boundary, not a bug, and there is no
+way around it from inside the page.
+
+So live search has three honest homes:
+
+| Where | Can it search? | Catch |
+|---|---|---|
+| The published artifact | No | Sandbox blocks all network |
+| The worker in `worker/` | **Yes** | You deploy and host it |
+| Claude in a conversation | **Yes** | Not self-serve; you ask |
+| Artifact + desktop app | Partially | Only via the `mcp` capability with `host:claude_browser`, and only when the viewer opens the page inside the Claude desktop app's Cowork session, approving each site |
+
+`POST /search {keyword}` on the worker queries the grants.gov public Search2
+API and returns normalized rows plus the raw payload.
+
+**Federal only.** grants.gov does not list state NOFOs. Illinois programs —
+CEJA, JTED and the rest — live on the GATA portal at grants.illinois.gov and in
+the CSFA catalog, neither of which publishes an open API. A state feed means a
+scheduled scrape or a human check; there is no shortcut.
+
+**Not yet exercised.** The grants.gov request and response shapes were written
+from the documented API but not called, because the authoring environment could
+not reach api.grants.gov. The handler returns `raw` alongside the normalized
+rows for exactly this reason. Check `raw` on the first call and correct
+`normalize()` if field names differ.
+
 ## What it will not do
 
 - **It cannot read your website from the published page.** An artifact runs in a
