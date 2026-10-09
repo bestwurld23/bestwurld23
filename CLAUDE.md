@@ -12,19 +12,32 @@ to the Chamber Foundation unless the request clearly says otherwise.
 ### 1. Greater Englewood Chamber Foundation (the default for grant work)
 - Based in **Englewood, Chicago**.
 - Jordan's role: **Program Director**.
-- Nonprofit chamber foundation. Community and business convening, outreach,
-  economic development in Englewood.
+- Website: www.gechamber.com
+- Nonprofit chamber foundation. Began as a Neighborhood Business Development
+  Center (McCormick Foundation has granted $1.4M since 2020) and now also
+  delivers workforce training directly.
+- **Delivers training in-house: 3-4 instructors on staff.** Three years doing
+  this work. Partners supply wraparound services, barrier reduction and job
+  placement. Has employer partnerships and is placing people into jobs.
+- **Current State of Illinois grantee: recently awarded a JTED grant** (Job
+  Training and Economic Development, DCEO). Already known to DCEO as a grantee.
+- Note the gap between this and the public record: searches still describe GECF
+  as a business development center, with no training footprint. Reviewers see
+  that too. Evidence of the training side has to be supplied explicitly in any
+  application; do not assume it is already visible.
 - Englewood is an **R3 area and an environmental justice community** — an Equity
   Investment Eligible Community under CEJA. This is a scoring asset in every
   Illinois equity-framed program; lead with it.
 - CEJA workforce region: **Chicago (South)**. Greater Englewood spans Englewood
   and West Englewood, so Chicago (Southwest and West) may also be arguable.
 
-**Not yet confirmed — ask once, then record here:**
-- Incorporated under the Illinois General Not For Profit Corporation Act of 1986
-  and in good standing with the IL Secretary of State?
-- Registered in the GATA Grantee Portal? SAM.gov active and set to "public"? UEI?
-- Audited financials, and a negotiated indirect cost rate (or electing de minimis 15%)?
+**Confirmed:** GATA and SAM registrations are in place.
+
+**Still open — ask, do not assume:**
+- What the 3-4 instructors actually teach (trades content vs. business/digital).
+- Which registered apprenticeship programs, contractors and contractor
+  associations will sign MOUs.
+- Audited financials; negotiated indirect rate or de minimis 15% election.
 - Relationship to the Greater Englewood Chamber of Commerce: shared staff, cost
   allocation method, lobbying firewall.
 
@@ -46,18 +59,30 @@ Technical assistance sessions (9/29 and 9/30/2026) have passed.
 | 3197-4343 | Clean Jobs Workforce Network (Hubs) | 20 | $50.9M total | up to 3 years |
 | 3137-4342 | Climate Works Pre-apprenticeship | 3 | $16M total, $3M–$6.5M each | 6/2027–5/2030 |
 
-**Standing recommendation: lead on Navigator, pass on Climate Works.**
-Reasoning is in the session history; the short version:
-- Navigator work is outreach, recruitment, screening, intake, referral — chamber
-  work. Community colleges and units of local government are **barred** from
-  applying, which removes Kennedy-King as a competitor.
-- In Chicago (South), DCEO pairs Navigators with Hubs **after** finalist
-  selection, so the application does **not** need a named Hub partner.
-- Hub work is curriculum delivery against the 2027–2029 Clean Jobs Curriculum
-  Framework, with instructors and instructional space. Only lead it if the
-  Foundation already delivers training.
-- Climate Works requires serving all of IDOT Region 1 and demonstrated building
-  trades and apprenticeship relationships. Three awards statewide. Not a fit.
+**Direction, set by Jordan (Program Director) on 2026-10-09:**
+- **LEAD: Climate Works Pre-apprenticeship (3137-4342)**, Northern Region.
+  GECF has in-house instructors and brings partners for barrier reduction.
+  Climate Works carries its own Energy Transition Barrier Reduction funding for
+  wrap-around services, so that partner structure is fundable inside the grant.
+- **PARTNER, not lead: Energy Transition Navigators (3174-4344)** — join another
+  organization's application.
+- Clean Jobs Workforce Hub (3197-4343): not pursued this cycle.
+
+An earlier recommendation in this repo said to lead Navigator and pass on
+Climate Works. It was written before the training capacity and JTED award were
+known. Superseded.
+
+**Open risks on Climate Works — track, do not ignore:**
+1. The Northern Region grantee must serve **all of IDOT Region 1** (Cook, DuPage,
+   Kane, Lake, McHenry, Will). Not Englewood, not the South Side. Delivery
+   outside Cook County is the hardest requirement in the NOFO.
+2. Eligibility requires demonstrated relationships with construction and building
+   trades **registered apprenticeship programs**, industry contractors and
+   contractor associations. This is an eligibility element, not just scoring.
+3. Participants must be prepared for **US DOL Registered Apprenticeships**.
+4. Three awards statewide; Cycle 1 Centers hold contracts through May 2027.
+5. Known trades pre-apprenticeship players in the region (Chicago Women in
+   Trades, Revolution Workshop, and similar) are likely competitors or partners.
 
 ## Project in this repo
 
