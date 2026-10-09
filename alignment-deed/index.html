@@ -341,6 +341,7 @@ footer p{margin:0;max-width:72ch}
         <div><h2>Saved runs</h2><p>Every reading you keep, newest first. Open one to bring it back into the console.</p></div>
       </div>
       <div id="runsList"></div>
+      <div id="compareBox"></div>
     </section>
     <section>
       <div class="sec-h">
@@ -1169,8 +1170,11 @@ function showView(which){
   window.scrollTo({ top:0, behavior:"smooth" });
 }
 
+const COMPARE = new Set();
+
 async function renderRuns(){
   const rows = await listRuns();
+  RUNS_CACHE = rows;
   $("#runsList").innerHTML = rows.length
     ? '<div class="leads">' + rows.map(r =>
         '<div class="deed"><div class="band" style="background:var(' + ((ROLES[r.role]||ROLES.PASS).c)
@@ -1179,16 +1183,88 @@ async function renderRuns(){
         + '<p class="lbl">' + esc(r.funder || "Funder not stated") + ' &middot; ' + esc(r.when || "")
         + (r.orgName ? ' &middot; ' + esc(r.orgName) : "") + '</p>'
         + '<p style="font-size:13px;margin:8px 0">' + esc(r.headline || "") + '</p>'
-        + '<button class="btn sm" data-open="' + esc(r.id) + '">Open this run</button></div></div>').join("")
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+        + '<button class="btn sm" data-open="' + esc(r.id) + '">Open</button>'
+        + '<label class="chip" style="cursor:pointer"><input type="checkbox" data-cmp="' + esc(r.id) + '"'
+        + (COMPARE.has(String(r.id)) ? " checked" : "") + ' style="margin-right:6px"> Compare</label>'
+        + '</div></div></div>').join("")
       + '</div>'
     : '<p class="note">No saved runs yet. Read an RFP, then press Save run.</p>';
+  $("#runsList").querySelectorAll("[data-cmp]").forEach(cb => cb.addEventListener("change", () => {
+    const id = cb.dataset.cmp;
+    if (cb.checked) COMPARE.add(id); else COMPARE.delete(id);
+    renderCompare();
+  }));
   $("#runsList").querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => {
     const r = rows.find(x => String(x.id) === b.dataset.open);
     if (!r || !r.raw) return;
     state.result = { raw:r.raw, s:computeScore(r.raw, r.profile || state.profile) };
     state.example = false; renderResult(); showView("read");
   }));
+  renderCompare();
   renderLibrary();
+}
+
+let RUNS_CACHE = [];
+
+/* Side by side: three opportunities from one funder are one decision. */
+function renderCompare(){
+  const box = $("#compareBox");
+  if (!box) return;
+  const picked = RUNS_CACHE.filter(r => COMPARE.has(String(r.id)));
+  if (picked.length < 2){
+    box.innerHTML = picked.length === 1
+      ? '<p class="note">Tick Compare on another run to put them side by side.</p>' : "";
+    return;
+  }
+
+  const cell = (label, fn) => '<tr><td style="font-family:var(--font-mono);font-size:11px;'
+    + 'letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);white-space:nowrap">'
+    + esc(label) + '</td>' + picked.map(r => '<td>' + fn(r) + '</td>').join("") + '</tr>';
+
+  const roleOf = r => (ROLES[r.role] || ROLES.PASS);
+  const axisOf = (r, id) => {
+    const a = ((r.raw && r.raw.axes) || []).find(x => x.id === id);
+    return a ? String(clamp(Math.round(a.score), 0, 100)) : "\u2014";
+  };
+  const hardOf = r => ((r.raw && r.raw.blockers) || []).filter(b => b.severity === "hard").length;
+
+  /* Lead the strongest viable one; everything else is a partner role or a pass. */
+  const rank = { LEAD:3, CO_APPLICANT:2, SUBRECIPIENT:1, PASS:0 };
+  const sorted = [...picked].sort((a,b) =>
+    (rank[b.role] || 0) - (rank[a.role] || 0) || (b.total || 0) - (a.total || 0));
+  const lead = sorted[0];
+  const call = (rank[lead.role] || 0) === 0
+    ? "None of these scores as a lead. Refer them on, or go in under another applicant."
+    : "Lead " + (lead.program || "the top one") + ". "
+      + (sorted.length > 1
+          ? "Take a partner or subrecipient role on " + sorted.slice(1)
+              .filter(r => (rank[r.role] || 0) > 0).map(r => r.program).join(" and ") + "."
+          : "")
+      + (sorted.some(r => (rank[r.role] || 0) === 0)
+          ? " Pass on " + sorted.filter(r => (rank[r.role] || 0) === 0).map(r => r.program).join(" and ") + "."
+          : "");
+
+  box.innerHTML = '<div class="deed" style="margin-top:14px">'
+    + '<div class="band" style="background:var(--deed-navy);color:#ffffff">'
+    + '<span class="t">Side by side</span><span class="s">' + picked.length + ' opportunities</span></div>'
+    + '<div class="deed-body"><div class="tw"><table class="terms"><thead><tr><th></th>'
+    + picked.map(r => '<th>' + esc(r.program || "Untitled") + '</th>').join("")
+    + '</tr></thead><tbody>'
+    + cell("Weighted fit", r => '<b>' + (r.total != null ? r.total : "\u2014") + '</b> / 100')
+    + cell("Role", r => '<span style="color:var(' + roleOf(r).c + ');font-weight:600">'
+        + esc(roleOf(r).label) + '</span>')
+    + cell("Hard gates", r => { const n = hardOf(r);
+        return n ? '<span style="color:var(--crit)">' + n + '</span>' : '<span style="color:var(--good)">none</span>'; })
+    + cell("Award", r => esc(awardLine((r.raw && r.raw.rfp) || {})))
+    + cell("Deadline", r => esc(((r.raw && r.raw.rfp) || {}).deadline || "not stated"))
+    + cell("Scored against", r => esc(r.orgName || "\u2014"))
+    + AXES.map(a => cell(a.label, r => axisOf(r, a.id))).join("")
+    + '</tbody></table></div>'
+    + '<p style="margin:14px 0 0;font-size:14px"><b>Portfolio call.</b> ' + esc(call) + '</p>'
+    + '<p class="note">One funder, one decision. Three thin applications to the same program office '
+    + 'cost more standing than one strong application plus two partner roles.</p>'
+    + '</div></div>';
 }
 
 async function renderLibrary(){
