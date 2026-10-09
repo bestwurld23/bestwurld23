@@ -117,6 +117,8 @@ section{margin-top:30px}
 .pane-h{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
 .hint{font-size:12px;color:var(--ink-dim);margin:0 0 12px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.orgpick{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#orgPick{flex:1;min-width:0;font-family:var(--font-mono);font-size:12.5px}
 .chip{font-family:var(--font-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;padding:3px 8px;
   border:1px solid var(--rule);border-radius:999px;background:var(--bg-sunk);color:var(--ink-dim)}
 .chip.on{border-color:var(--phosphor);color:var(--phosphor);background:var(--phosphor-soft)}
@@ -247,6 +249,10 @@ footer p{margin:0;max-width:72ch}
           <h2 class="lbl">2 &middot; Your organization</h2>
           <button class="btn sm" id="editOrg">Full profile</button>
         </div>
+        <div class="orgpick" id="orgPickWrap" hidden>
+          <select id="orgPick" aria-label="Which organization is applying"></select>
+          <button class="btn sm" id="newOrg">Add</button>
+        </div>
         <div id="orgAsk">
           <p class="hint">Paste your About or Programs page. It is read once, saved, and you never do this again. No form to fill.</p>
           <label class="f"><span class="lbl">Website copy</span>
@@ -291,7 +297,8 @@ footer p{margin:0;max-width:72ch}
           </div>
         </div>
         <div class="pane">
-          <h3 class="lbl" style="margin-bottom:10px">Fields</h3>
+          <h3 class="lbl" style="margin-bottom:4px">Fields</h3>
+          <p class="hint" id="orgEditing"></p>
           <label class="f"><span class="lbl">Organization name</span><input type="text" id="oName"></label>
           <div class="grid2">
             <label class="f"><span class="lbl">Legal status</span>
@@ -388,15 +395,34 @@ const ROLES = {
 };
 
 /* ======================= STATE ======================= */
-const state = { profile:blankProfile(), rfp:{text:"",funder:"",due:""}, result:null, run:null, example:false };
+const state = { orgs:{ list:[], activeId:"" }, profile:blankProfile(),
+                rfp:{text:"",funder:"",due:""}, result:null, run:null, example:false };
 let DB=null, USER=null, UID=null, SAMPLE=null, DL=null;
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const clamp = (n,lo,hi) => Math.max(lo, Math.min(hi, Number.isFinite(+n) ? +n : lo));
 
 function blankProfile(){
-  return { name:"", site:"", status:"501c3", years:"", budget:"", staff:"", geo:"", pop:"",
+  return { id:"", name:"", site:"", status:"501c3", years:"", budget:"", staff:"", geo:"", pop:"",
            mission:"", programs:"", outcomes:"", funders:"", caps:[] };
+}
+function newOrgId(){ return "org_" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function newProfile(){ const p = blankProfile(); p.id = newOrgId(); return p; }
+const orgLabel = o => (o && o.name) ? o.name : "Untitled organization";
+function activeOrg(){ return state.orgs.list.find(o => o.id === state.orgs.activeId) || null; }
+function commitOrg(p){
+  if (!p.id) p.id = newOrgId();
+  const i = state.orgs.list.findIndex(o => o.id === p.id);
+  if (i >= 0) state.orgs.list[i] = p; else state.orgs.list.push(p);
+  state.orgs.activeId = p.id;
+  state.profile = p;
+  return persistOrgs();
+}
+function setActiveOrg(id){
+  state.orgs.activeId = id;
+  state.profile = activeOrg() || blankProfile();
+  fillOrgForm(state.profile); renderOrgSummary(); renderOrgPicker();
+  persistOrgs();
 }
 
 /* ---- storage: db when signed in, localStorage otherwise ---- */
@@ -404,18 +430,38 @@ const LS = {
   get(k){ try { const v = localStorage.getItem("ad:"+k); return v ? JSON.parse(v) : null; } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem("ad:"+k, JSON.stringify(v)); } catch(e){} }
 };
-async function saveProfile(p){
-  LS.set("profile", p);
-  if (DB && UID) { try { await DB.collection("data/users/"+UID).doc("profile").set(p); return "account"; } catch(e){} }
+async function persistOrgs(){
+  LS.set("orgs", state.orgs);
+  if (DB && UID){
+    try { await DB.collection("data/users/" + UID).doc("orgs").set(state.orgs); return "account"; } catch(e){}
+  }
   return "browser";
 }
-async function loadProfile(){
-  if (DB && UID) {
-    try { const d = await DB.collection("data/users/"+UID).doc("profile").get();
-          if (d && d.exists) return Object.assign(blankProfile(), d.data()); } catch(e){}
-  }
-  return LS.get("profile") ? Object.assign(blankProfile(), LS.get("profile")) : null;
+
+/* Carries the single-profile format of earlier versions into the list. */
+function adoptLegacy(one){
+  if (!one || !(one.mission || one.programs || one.name)) return null;
+  const p = Object.assign(newProfile(), one);
+  if (!p.id) p.id = newOrgId();
+  return { list:[p], activeId:p.id };
 }
+
+async function loadOrgs(){
+  if (DB && UID){
+    try {
+      const d = await DB.collection("data/users/" + UID).doc("orgs").get();
+      if (d && d.exists && Array.isArray(d.data().list) && d.data().list.length) return d.data();
+    } catch(e){}
+    try {
+      const old = await DB.collection("data/users/" + UID).doc("profile").get();
+      if (old && old.exists){ const m = adoptLegacy(old.data()); if (m) return m; }
+    } catch(e){}
+  }
+  const local = LS.get("orgs");
+  if (local && Array.isArray(local.list) && local.list.length) return local;
+  return adoptLegacy(LS.get("profile"));
+}
+
 async function saveRun(run){
   const local = LS.get("runs") || [];
   local.unshift(run); LS.set("runs", local.slice(0,40));
@@ -640,6 +686,7 @@ function renderResult(){
     + row("Funding family", r.family || "")
     + row("Award vs. your budget", s.ratio ? s.ratio.toFixed(1) + "x annual budget" : "")
     + row("Issue areas", (r.issueAreas||[]).filter(Boolean).join(", "))
+    + row("Scored against", state.result.org || "")
     + '</ul></div></div></section>';
 
   /* axis deeds */
@@ -941,7 +988,7 @@ async function runRead(){
       p = Object.assign(blankProfile(), state.profile, cleanProfile(got));
       state.profile = p;
       fillOrgForm(p); renderOrgSummary();
-      saveProfile(p);
+      commitOrg(p); renderOrgPicker();
     }
     if (!hasProfile(p)){
       setStatus("#status", "Paste your About or Programs copy into box 2 so there is something to score against.", true);
@@ -967,7 +1014,7 @@ async function runRead(){
     if (state.rfp.due && !core.rfp.deadline) core.rfp.deadline = state.rfp.due;
 
     state.example = false;
-    state.result = { raw:core, s:computeScore(core, p), pending:true };
+    state.result = { raw:core, s:computeScore(core, p), pending:true, org:orgLabel(p) };
     renderResult();
     $("#result").scrollIntoView({ behavior:"smooth", block:"start" });
     progress("Writing the language kit");
@@ -976,7 +1023,7 @@ async function runRead(){
     if (kit && kit.__err) core.kitError = errCopy(kit.__err);
     else Object.assign(core, kit || {});
 
-    state.result = { raw:core, s:computeScore(core, p), pending:false };
+    state.result = { raw:core, s:computeScore(core, p), pending:false, org:orgLabel(p) };
     renderResult();
     progressStop();
     if (ctl.stopped){
@@ -1083,7 +1130,8 @@ function readOrgForm(){
   return { name:g("#oName"), site:g("#oSite"), status:g("#oStatus"), years:g("#oYears"),
     budget:g("#oBudget"), staff:g("#oStaff"), geo:g("#oGeo"), pop:g("#oPop"), mission:g("#oMission"),
     programs:g("#oPrograms"), outcomes:g("#oOutcomes"), funders:g("#oFunders"),
-    caps:[...$("#capChips").querySelectorAll('button[aria-pressed="true"]')].map(b => b.dataset.cap) };
+    caps:[...$("#capChips").querySelectorAll('button[aria-pressed="true"]')].map(b => b.dataset.cap),
+    id:(activeOrg() || {}).id || "" };
 }
 function renderOrgSummary(){
   const p = state.profile;
@@ -1098,6 +1146,18 @@ function renderOrgSummary(){
   $("#orgHint").textContent = "Scored against this profile. Open the full profile to correct anything.";
   $("#orgChips").innerHTML = CAPS.map(([k,lab]) =>
     '<span class="chip' + (p.caps.includes(k) ? " on" : "") + '">' + esc(lab) + '</span>').join("");
+}
+
+function renderOrgPicker(){
+  const wrap = $("#orgPickWrap"), sel = $("#orgPick");
+  if (wrap) wrap.hidden = state.orgs.list.length === 0;
+  if (sel) sel.innerHTML = state.orgs.list.map(o =>
+    '<option value="' + esc(o.id) + '"' + (o.id === state.orgs.activeId ? " selected" : "") + '>'
+      + esc(orgLabel(o)) + '</option>').join("");
+  const ed = $("#orgEditing");
+  if (ed) ed.textContent = state.orgs.list.length
+    ? "Editing " + orgLabel(activeOrg()) + ". Changes apply to this organization only."
+    : "Nothing saved yet. Fill this in, or paste your website copy on the Read tab.";
 }
 
 function showView(which){
@@ -1116,7 +1176,8 @@ async function renderRuns(){
         '<div class="deed"><div class="band" style="background:var(' + ((ROLES[r.role]||ROLES.PASS).c)
         + ');color:' + ((ROLES[r.role]||ROLES.PASS).ink) + '"><span class="t">' + esc(r.program || "Untitled") + '</span>'
         + '<span class="s">' + r.total + '/100</span></div><div class="deed-body">'
-        + '<p class="lbl">' + esc(r.funder || "Funder not stated") + ' &middot; ' + esc(r.when || "") + '</p>'
+        + '<p class="lbl">' + esc(r.funder || "Funder not stated") + ' &middot; ' + esc(r.when || "")
+        + (r.orgName ? ' &middot; ' + esc(r.orgName) : "") + '</p>'
         + '<p style="font-size:13px;margin:8px 0">' + esc(r.headline || "") + '</p>'
         + '<button class="btn sm" data-open="' + esc(r.id) + '">Open this run</button></div></div>').join("")
       + '</div>'
@@ -1171,7 +1232,8 @@ function wireResult(){
     if (state.example){ sv.textContent = "Example only"; setTimeout(() => sv.textContent = "Save run", 2200); return; }
     const { raw, s } = state.result, r = raw.rfp || {};
     const run = { id:Date.now(), when:new Date().toISOString().slice(0,10), program:r.program||"Untitled",
-      funder:r.funder||"", headline:raw.headline||"", total:s.total, role:s.role, raw, profile:state.profile };
+      funder:r.funder||"", headline:raw.headline||"", total:s.total, role:s.role, raw,
+      profile:state.profile, orgName:state.result.org || orgLabel(state.profile) };
     await saveRun(run);
     sv.textContent = "Saved";
     if (DB){ try { await DB.collection("library").doc("rfp_"+run.id).set({ id:run.id, program:run.program,
@@ -1232,13 +1294,20 @@ function bootInner(){
 
   ["read","org","runs"].forEach(k => $("#tab-"+k).addEventListener("click", () => showView(k)));
   $("#editOrg").addEventListener("click", () => showView("org"));
+  $("#orgPick").addEventListener("change", e => setActiveOrg(e.target.value));
+  $("#newOrg").addEventListener("click", () => {
+    const p = newProfile();
+    state.orgs.list.push(p);
+    setActiveOrg(p.id);
+    showView("org");
+    $("#oName").focus();
+  });
   $("#runBtn").addEventListener("click", runRead);
   $("#stopBtn").addEventListener("click", () => { if (RUN){ RUN.stopped = true; RUN.abort(); } });
   $("#extractBtn").addEventListener("click", runExtract);
   $("#saveOrg").addEventListener("click", async () => {
-    state.profile = readOrgForm();
-    const where = await saveProfile(state.profile);
-    renderOrgSummary();
+    const where = await commitOrg(readOrgForm());
+    renderOrgSummary(); renderOrgPicker();
     setStatus("#saveStatus", where === "account" ? "Saved to your account." : "Saved in this browser only.");
   });
   $("#themeBtn").addEventListener("click", () => {
@@ -1250,17 +1319,17 @@ function bootInner(){
   $("#loadSample").addEventListener("click", () => {
     $("#rfpText").value = EX_RFP_TEXT; $("#rfpFunder").value = EX_RAW.rfp.funder;
     state.example = true;
-    state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE), pending:false };
+    state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE), pending:false, org:EX_PROFILE.name };
     renderResult();
     setStatus("#status", "Example loaded. Press Read it to score this text against your own organization.");
   });
 
   const t = LS.get("theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
-  fillOrgForm(state.profile); renderOrgSummary();
+  fillOrgForm(state.profile); renderOrgSummary(); renderOrgPicker();
 
   /* open in a working state: the example reading, clearly marked */
   state.example = true;
-  state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE) };
+  state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE), org:EX_PROFILE.name };
   renderResult();
   rain();
 
@@ -1272,8 +1341,14 @@ function bootInner(){
   (async () => {
     [SAMPLE, DB, USER, DL] = await Promise.all(["sample","db","user","downloads"].map(grab));
     if (USER){ try { UID = await USER.id(); } catch(e){} }
-    const saved = await loadProfile();
-    if (saved){ state.profile = saved; fillOrgForm(saved); renderOrgSummary(); }
+    const saved = await loadOrgs();
+    if (saved && saved.list.length){
+      state.orgs = saved;
+      if (!activeOrg()) state.orgs.activeId = saved.list[0].id;
+      state.profile = activeOrg();
+      fillOrgForm(state.profile);
+    }
+    renderOrgSummary(); renderOrgPicker();
     if (!SAMPLE) setStatus("#status", "Claude is not reachable from this view, so new readings cannot run here. The example below is complete.", true);
     renderLibrary();
   })();
