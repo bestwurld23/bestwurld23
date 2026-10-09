@@ -34,6 +34,27 @@ disagree with it, the page shows both and says the rules overrode it.
 
 Full specification, including every threshold: [RUBRIC.md](RUBRIC.md).
 
+## How a reading runs
+
+The page makes two Claude calls **in parallel**, not one:
+
+1. **Core** (`complex` tier) — the opportunity's facts, six axis scores with
+   quotes, blockers, next steps. Small enough to come back whole and fast.
+2. **Kit** (`default` tier) — the partner play, the language kit, the leads.
+
+The verdict renders the moment the core call lands; the kit fills in underneath
+when it arrives. One combined call was the original design and it was a mistake:
+a single request for scores *and* twelve term mappings *and* a drafted paragraph
+*and* leads is slow enough to look hung, and long enough to truncate — and a
+truncated reply is a total failure, not a partial one. Splitting it means a
+failure in the writing half still leaves you a scored verdict.
+
+If there is no saved profile and website copy is pasted, a third `quick` call
+runs first to turn that copy into a profile, which is then saved.
+
+The worker in `worker/` still uses one combined prompt. It has no interactive
+latency to manage, so the tradeoff goes the other way.
+
 ## The language kit
 
 The part that most tools skip and most people actually need. For each

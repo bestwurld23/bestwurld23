@@ -121,6 +121,8 @@ section{margin-top:30px}
   border:1px solid var(--rule);border-radius:999px;background:var(--bg-sunk);color:var(--ink-dim)}
 .chip.on{border-color:var(--phosphor);color:var(--phosphor);background:var(--phosphor-soft)}
 .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.runbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px;padding:14px 16px;
+  border:2px solid var(--rule);border-radius:4px;background:var(--card)}
 .status{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-dim);min-width:0;flex:1}
 .status b{color:var(--phosphor);font-weight:600}
 .status.err b{color:var(--crit)}
@@ -227,32 +229,42 @@ footer p{margin:0;max-width:72ch}
     <div class="console">
       <div class="pane">
         <div class="pane-h">
-          <h2 class="lbl">The opportunity</h2>
+          <h2 class="lbl">1 &middot; The opportunity</h2>
           <button class="btn sm" id="loadSample">Load example</button>
         </div>
         <p class="hint">Paste the RFP, NOFO, or funding announcement. Eligibility and review-criteria sections matter most &mdash; paste those if you paste nothing else.</p>
         <label class="f"><span class="lbl">RFP text</span>
-          <textarea id="rfpText" rows="14" placeholder="Paste the full solicitation here..."></textarea>
+          <textarea id="rfpText" rows="12" placeholder="Paste the full solicitation here..."></textarea>
         </label>
         <div class="grid2">
           <label class="f"><span class="lbl">Funder (optional)</span><input type="text" id="rfpFunder" placeholder="e.g. State Broadband Office"></label>
           <label class="f"><span class="lbl">Deadline (optional)</span><input type="text" id="rfpDue" placeholder="e.g. 2026-01-15"></label>
         </div>
-        <div class="bar">
-          <button class="btn go" id="runBtn">Read the RFP</button>
-          <p class="status" id="status" role="status" aria-live="polite"></p>
-        </div>
       </div>
 
       <div class="pane">
         <div class="pane-h">
-          <h2 class="lbl">Your organization</h2>
-          <button class="btn sm" id="editOrg">Edit</button>
+          <h2 class="lbl">2 &middot; Your organization</h2>
+          <button class="btn sm" id="editOrg">Full profile</button>
         </div>
-        <p class="hint" id="orgHint">The rubric scores the RFP against this profile. Fill it in once.</p>
-        <ul class="rows" id="orgSummary"></ul>
-        <div class="chips" id="orgChips" style="margin-top:12px"></div>
+        <div id="orgAsk">
+          <p class="hint">Paste your About or Programs page. It is read once, saved, and you never do this again. No form to fill.</p>
+          <label class="f"><span class="lbl">Website copy</span>
+            <textarea id="quickSite" rows="9" placeholder="Paste your About / Programs copy here..."></textarea>
+          </label>
+        </div>
+        <div id="orgKnown" hidden>
+          <p class="hint" id="orgHint"></p>
+          <ul class="rows" id="orgSummary"></ul>
+          <div class="chips" id="orgChips" style="margin-top:12px"></div>
+        </div>
       </div>
+    </div>
+
+    <div class="runbar">
+      <button class="btn go" id="runBtn">Read it</button>
+      <button class="btn" id="stopBtn" hidden>Stop</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
     </div>
 
     <div id="result"></div>
@@ -444,12 +456,9 @@ Return exactly:
 - funders: named funders, foundations or agencies credited anywhere in the copy, comma separated.`;
 }
 
-function analysisPrompt(rfpText, p){
-  const axisDefs = AXES.map(a => `- ${a.id} ("${a.label}"): ${a.def}`).join("\n");
-  return `You are a grant strategist advising a small organization on whether to pursue one funding opportunity. You are paid to be accurate, not encouraging. Return JSON only, no prose outside it.
-
-=== ORGANIZATION ===
-Name: ${p.name || "not stated"}
+function orgBlock(p){
+  const caps = p.caps.length ? p.caps.map(c => (CAPS.find(x => x[0]===c)||[,c])[1]).join("; ") : "none confirmed";
+  return `Name: ${p.name || "not stated"}
 Legal status: ${p.status || "not stated"}
 Years operating: ${p.years || "not stated"}
 Annual budget (USD): ${p.budget || "not stated"}
@@ -460,7 +469,16 @@ Mission: ${p.mission || "not stated"}
 Programs: ${p.programs || "not stated"}
 Evidenced outcomes: ${p.outcomes || "not stated"}
 Past funders: ${p.funders || "not stated"}
-Compliance readiness (only these are confirmed in place): ${p.caps.length ? p.caps.map(c => (CAPS.find(x => x[0]===c)||[,c])[1]).join("; ") : "none confirmed"}
+Compliance readiness (only these are confirmed in place): ${caps}`;
+}
+
+/* Call one: the scored verdict. Small enough to come back whole and fast. */
+function corePrompt(rfpText, p){
+  const axisDefs = AXES.map(a => `- ${a.id} ("${a.label}"): ${a.def}`).join("\n");
+  return `You are a grant strategist advising a small organization on whether to pursue one funding opportunity. You are paid to be accurate, not encouraging. Return JSON only, no prose outside it.
+
+=== ORGANIZATION ===
+${orgBlock(p)}
 
 === OPPORTUNITY (verbatim, may be truncated) ===
 """
@@ -475,30 +493,48 @@ Scoring discipline:
 - Every finding must rest on words from the opportunity text or the organization profile. Quote the opportunity in "evidence" (under 25 words, verbatim). If the text does not address something, say "not stated in the solicitation" and score on what is there.
 - Absent compliance items are a real cost. Anything not listed as confirmed above is not in place.
 - Call a blocker "hard" only when the solicitation states a requirement this organization fails right now. Everything else is "soft".
-- Opportunities under "leads" are recollection, not a live database: give the recurring program or funder family, and set confidence to "low" unless you are sure the program exists and recurs. Never state a deadline for a lead.
+- Keep every string short. "finding" is at most 45 words. "rationale" is at most 90 words.
 
-Return exactly this JSON:
+Return exactly this JSON and nothing else:
 {"rfp":{"funder":"","program":"","awardMin":0,"awardMax":0,"awardNote":"","deadline":"","matchRequired":"","eligibleApplicants":"","family":"","issueAreas":[""]},
  "headline":"",
  "modelRole":"LEAD|CO_APPLICANT|SUBRECIPIENT|PASS",
  "rationale":"",
  "axes":[{"id":"mission","score":0,"finding":"","evidence":""}],
  "blockers":[{"severity":"hard|soft","issue":"","whatToDo":""}],
- "partner":{"needed":true,"profile":"","theyBring":"","youBring":"","split":"","whereToLook":""},
- "language":{"terms":[{"term":"","theirMeaning":"","yourPhrasing":""}],"opening":"","say":[""],"avoid":[""],"themes":[""]},
- "nextSteps":[""],
- "leads":[{"program":"","funder":"","why":"","cycle":"","keywords":"","confidence":"high|medium|low"}]}
+ "nextSteps":[""]}
 
 Field notes:
 - awardMin/awardMax: dollars as integers, 0 if the text does not say. awardNote: the award language verbatim, short.
-- family: the funding family in a few words, e.g. "federal workforce formula pass-through" or "regional community foundation responsive grant".
+- family: the funding family in a few words.
 - headline: one sentence, under 20 words, on what decides this.
 - axes: all six ids, once each, in the order given above.
-- language.terms: 8 to 12 rows. "term" is a word or phrase the solicitation itself uses. "theirMeaning" is what the funder means by it in this document. "yourPhrasing" is a specific sentence fragment this organization can honestly write using that term, drawing on its real programs.
+- nextSteps: 4 to 6 concrete actions in order, each doable this month, one line each.`;
+}
+
+/* Call two: the writing. Runs beside call one, so neither has to carry the other. */
+function kitPrompt(rfpText, p){
+  return `You are a grant writer helping a small organization position itself for one funding opportunity. Be specific and honest; never invent capacity the organization does not have. Return JSON only, no prose outside it.
+
+=== ORGANIZATION ===
+${orgBlock(p)}
+
+=== OPPORTUNITY (verbatim, may be truncated) ===
+"""
+${rfpText.slice(0, RFP_CAP)}
+"""
+
+Return exactly this JSON and nothing else:
+{"partner":{"needed":true,"profile":"","theyBring":"","youBring":"","split":"","whereToLook":""},
+ "language":{"terms":[{"term":"","theirMeaning":"","yourPhrasing":""}],"opening":"","say":[""],"avoid":[""],"themes":[""]},
+ "leads":[{"program":"","funder":"","why":"","cycle":"","keywords":"","confidence":"high|medium|low"}]}
+
+Field notes:
+- partner: assume this organization may need a co-applicant or a lead to go under. Say what that partner must bring, what this organization brings, and how to split the scope. Each field one or two sentences.
+- language.terms: 8 to 10 rows. "term" is a word or phrase the solicitation itself uses. "theirMeaning" is what the funder means by it in this document. "yourPhrasing" is a specific sentence fragment this organization can honestly write using that term, drawing on its real programs.
 - language.opening: 110 to 160 words. The opening paragraph of the narrative, in this organization's voice, using the solicitation's vocabulary and naming its real programs and geography. No placeholders, no brackets.
 - say: 5 things to foreground. avoid: 5 framings that will cost points with this reviewer. themes: the themes the solicitation requires every applicant to address.
-- nextSteps: 4 to 6 concrete actions in order, each doable this month.
-- leads: 4 to 6 other opportunities or funder families worth checking.`;
+- leads: 4 to 5 other opportunities or funder families worth checking. These are recollection, not a live database: give the recurring program or funder family, set confidence to "low" unless you are sure the program exists and recurs, and never state a deadline.`;
 }
 
 /* ======================= SCORING (the page's own arithmetic) ======================= */
@@ -565,6 +601,9 @@ function renderResult(){
   const box = $("#result");
   if (!state.result){ box.innerHTML = ""; return; }
   const { raw, s } = state.result;
+  const pend = !!state.result.pending;
+  const list = (cls, items) => '<ul class="ul ' + cls + '">'
+    + items.filter(Boolean).map(x => '<li><span>' + esc(x) + '</span></li>').join("") + '</ul>';
   const r = raw.rfp || {};
   const role = ROLES[s.role] || ROLES.CO_APPLICANT;
   const ex = state.example ? '<span class="ex">Example run</span>' : "";
@@ -635,7 +674,7 @@ function renderResult(){
 
   /* partner */
   const pt = raw.partner || {};
-  if (pt.needed || s.role !== "LEAD"){
+  if (pt.profile || pt.theyBring || pt.youBring){
     h += '<section><div class="sec-h"><div><h2>The partner play</h2>'
       + '<p>What the other side of this application has to bring, and what you put on the table.</p></div></div>'
       + '<div class="deed"><div class="band" style="background:var(--deed-pink);color:#07100a">'
@@ -650,6 +689,8 @@ function renderResult(){
   /* language kit */
   const lg = raw.language || {};
   const terms = (lg.terms||[]).filter(t => t && t.term);
+  const hasKit = terms.length || lg.opening || (lg.say||[]).length || (lg.themes||[]).length;
+  if (hasKit){
   h += '<section><div class="sec-h"><div><h2>Language kit</h2>'
     + '<p>The solicitation\'s own vocabulary, mapped to sentences you can honestly write.</p></div></div>';
   if (terms.length){
@@ -668,11 +709,10 @@ function renderResult(){
       + '<div class="deed-body"><p class="draft" id="openText">' + esc(lg.opening) + '</p>'
       + '<p class="note">A draft in your voice using their vocabulary. Check every claim against your own records before it goes in.</p></div></div>';
   }
-  const list = (cls, items) => '<ul class="ul ' + cls + '">' + items.filter(Boolean).map(x => '<li><span>' + esc(x) + '</span></li>').join("") + '</ul>';
   if ((lg.say||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-green);color:#07100a"><span class="t">Foreground this</span></div><div class="deed-body">' + list("say", lg.say) + '</div></div>';
   if ((lg.avoid||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-red);color:#ffffff"><span class="t">Costs you points</span></div><div class="deed-body">' + list("avoid", lg.avoid) + '</div></div>';
   if ((lg.themes||[]).length) h += '<div class="deed"><div class="band" style="background:var(--deed-sky);color:#07100a"><span class="t">Themes they require</span></div><div class="deed-body">' + list("say", lg.themes) + '</div></div>';
-  h += '</div></section>';
+  h += '</div></section>'; }
 
   /* next steps */
   if ((raw.nextSteps||[]).length){
@@ -702,6 +742,17 @@ function renderResult(){
             + (l.keywords ? '<p class="note mono">Search: ' + esc(l.keywords) + '</p>' : "")
             + '</div></div>';
         }).join("") + '</div></section>';
+  }
+
+  if (pend || raw.kitError){
+    h += '<section><div class="deed" style="border-left:6px solid var(--phosphor)"><div class="deed-body">'
+      + (raw.kitError
+          ? '<p class="lbl" style="color:var(--warn)">Language kit did not arrive</p>'
+            + '<p style="font-size:13px;margin:6px 0 0">' + esc(raw.kitError) + '</p>'
+          : '<p class="lbl">Still writing</p><p style="font-size:13px;margin:6px 0 0">'
+            + 'The partner play, language kit and leads are being written now. '
+            + 'The verdict and rubric above are final.</p>')
+      + '</div></div></section>';
   }
 
   box.innerHTML = h;
@@ -814,33 +865,135 @@ function sampleUnavailable(el){
   setStatus(el, "Claude is not reachable from this view, so a new reading cannot run. The example below still shows the full output.", true);
 }
 
-async function runAnalysis(){
-  const text = $("#rfpText").value.trim();
-  if (text.length < 200){ setStatus("#status", "Paste more of the solicitation. Under 200 characters there is nothing to score.", true); return; }
-  if (!SAMPLE){ sampleUnavailable("#status"); return; }
-  const p = state.profile;
-  if (!p.mission && !p.programs){ setStatus("#status", "Fill in the organization profile first, on the Org tab.", true); return; }
+const PKEYS = ["name","status","years","budget","staff","geo","pop","mission","programs","outcomes","funders"];
+const STATUSES = ["501c3","fiscally-sponsored","501c4","government","school","tribal","for-profit","unincorporated"];
+const hasProfile = p => !!(p && (p.mission || p.programs));
 
-  const btn = $("#runBtn"); btn.disabled = true;
-  setStatus("#status", "Reading " + text.length.toLocaleString("en-US") + " characters against six axes...");
+function cleanProfile(got){
+  const out = {};
+  if (!got || typeof got !== "object") return out;
+  for (const k of PKEYS){
+    const v = got[k];
+    if (typeof v === "string" && v.trim()) out[k] = v.trim();
+    else if (typeof v === "number") out[k] = String(v);
+  }
+  if (!STATUSES.includes(out.status)) delete out.status;
+  return out;
+}
+
+/* A visible clock, so a slow reading never looks like a dead button. */
+let TIMER = null;
+function progress(label){
+  const el = $("#status");
+  const tick = () => {
+    if (!TIMER) return;
+    const n = Math.round((Date.now() - TIMER.t0) / 1000);
+    el.className = "status";
+    el.innerHTML = "<b>" + esc(TIMER.label) + "</b> <span class=\"mono\">" + n + "s</span>"
+      + (n > 45 ? " <span class=\"mono\" style=\"opacity:.65\">a long solicitation can take two minutes</span>" : "");
+  };
+  if (TIMER) TIMER.label = label;
+  else TIMER = { t0: Date.now(), label, id: setInterval(() => tick(), 250) };
+  tick();
+}
+function progressStop(){ if (TIMER){ clearInterval(TIMER.id); TIMER = null; } }
+
+function errCopy(e){
+  switch (e && e.code){
+    case "cancelled":        return "Stopped.";
+    case "not_granted":      return "This page was not allowed to use Claude. Reload and allow it when asked.";
+    case "sampling_disabled":return "Claude is not available on this account, so readings cannot run.";
+    case "session_expired":  return "Your session expired. Reload the page and sign in again.";
+    case "rate_limited":     return "Claude is rate limited on your account right now. Wait a minute, then press Read it again.";
+    case "prompt_too_large": return "That solicitation is too long to send at once. Paste the eligibility and review-criteria sections only.";
+    case "invalid_json":     return "Claude's answer came back malformed. Press Read it again; if it repeats, paste a shorter excerpt.";
+    case "refused":          return "Claude declined to answer on this text. Try pasting the solicitation's own sections rather than the whole document.";
+    case "empty_completion": return "Claude returned nothing. Try a shorter excerpt.";
+    case "bad_shape":        return "The reading came back in a shape the page could not use. Press Read it again.";
+    default:                 return "The reading failed. Press Read it again." + (e && e.message ? " (" + e.message + ")" : "");
+  }
+}
+
+let RUN = null;
+
+async function runRead(){
+  if (RUN) return;
+  const text = $("#rfpText").value.trim();
+  if (text.length < 200){
+    setStatus("#status", "Paste more of the solicitation. Under 200 characters there is nothing to score.", true);
+    $("#rfpText").focus(); return;
+  }
+  if (!SAMPLE){ sampleUnavailable("#status"); return; }
+
+  const ctl = new AbortController();
+  RUN = ctl;
+  $("#runBtn").disabled = true;
+  $("#stopBtn").hidden = false;
+
   try {
-    const raw = await SAMPLE.json(analysisPrompt(text, p), { modelTier:"complex" });
-    if (!raw || !Array.isArray(raw.axes)) throw new Error("The reading came back in a shape the page could not use. Try again.");
-    const s = computeScore(raw, p);
+    let p = state.profile;
+    const copy = ($("#quickSite") ? $("#quickSite").value : "").trim();
+
+    // Zero setup: if there is no profile yet but there is website copy, read it first.
+    if (!hasProfile(p) && copy.length >= 120){
+      progress("Reading your organization copy");
+      const got = await SAMPLE.json(extractPrompt(copy), { modelTier:"quick", signal:ctl.signal });
+      p = Object.assign(blankProfile(), state.profile, cleanProfile(got));
+      state.profile = p;
+      fillOrgForm(p); renderOrgSummary();
+      saveProfile(p);
+    }
+    if (!hasProfile(p)){
+      setStatus("#status", "Paste your About or Programs copy into box 2 so there is something to score against.", true);
+      if ($("#quickSite")) $("#quickSite").focus();
+      return;
+    }
+
     state.rfp = { text, funder:$("#rfpFunder").value.trim(), due:$("#rfpDue").value.trim() };
-    if (state.rfp.funder && !raw.rfp.funder) raw.rfp.funder = state.rfp.funder;
-    if (state.rfp.due && !raw.rfp.deadline) raw.rfp.deadline = state.rfp.due;
-    state.result = { raw, s }; state.example = false;
+    progress("Scoring six axes");
+
+    // Two smaller calls side by side beat one that has to carry everything.
+    const corePromise = SAMPLE.json(corePrompt(text, p), { modelTier:"complex", signal:ctl.signal });
+    const kitPromise  = SAMPLE.json(kitPrompt(text, p),  { modelTier:"default", signal:ctl.signal })
+                          .catch(e => ({ __err: e }));
+
+    let core;
+    try { core = await corePromise; }
+    catch (e){ ctl.abort(); throw e; }
+    if (!core || !Array.isArray(core.axes)) { ctl.abort(); throw { code:"bad_shape" }; }
+
+    core.rfp = core.rfp || {};
+    if (state.rfp.funder && !core.rfp.funder) core.rfp.funder = state.rfp.funder;
+    if (state.rfp.due && !core.rfp.deadline) core.rfp.deadline = state.rfp.due;
+
+    state.example = false;
+    state.result = { raw:core, s:computeScore(core, p), pending:true };
     renderResult();
-    setStatus("#status", "Read. " + s.total + "/100, " + (ROLES[s.role]||{}).label.toLowerCase() + ".");
     $("#result").scrollIntoView({ behavior:"smooth", block:"start" });
+    progress("Writing the language kit");
+
+    const kit = await kitPromise;
+    if (kit && kit.__err) core.kitError = errCopy(kit.__err);
+    else Object.assign(core, kit || {});
+
+    state.result = { raw:core, s:computeScore(core, p), pending:false };
+    renderResult();
+    progressStop();
+    if (ctl.stopped){
+      setStatus("#status", "Stopped. The verdict and rubric above stand; the language kit was not written.");
+    } else {
+      setStatus("#status", "Read. " + state.result.s.total + "/100, "
+        + (ROLES[state.result.s.role] || {}).label.toLowerCase() + ".");
+    }
   } catch(err){
-    const code = err && err.code;
-    setStatus("#status",
-      code === "not_granted" ? "This view is not allowed to call Claude, so the reading cannot run."
-      : code === "rate_limited" ? "Rate limited. Wait a minute and read it again."
-      : (err && err.message) || "The reading failed. Try again.", true);
-  } finally { btn.disabled = false; }
+    progressStop();
+    setStatus("#status", errCopy(err), !(err && err.code === "cancelled"));
+  } finally {
+    progressStop();
+    RUN = null;
+    $("#runBtn").disabled = false;
+    $("#stopBtn").hidden = true;
+  }
 }
 
 async function runExtract(){
@@ -934,17 +1087,19 @@ function readOrgForm(){
 }
 function renderOrgSummary(){
   const p = state.profile;
-  const complete = !!(p.name && p.mission && p.geo && p.budget);
-  $("#orgSummary").innerHTML = complete
-    ? row("Organization", p.name) + row("Status", p.status) + row("Budget", money(p.budget))
-      + row("Staff FTE", p.staff) + row("Geography", p.geo) + row("Serves", p.pop)
-    : '<li style="border:0;padding:0"><span style="font-size:13px;color:var(--ink-dim)">Nothing saved yet. The Org tab takes about four minutes, or paste your website copy and let it fill the fields.</span></li>';
-  $("#orgHint").textContent = complete
-    ? "Scored against this profile. Edit it any time."
-    : "The rubric scores the RFP against this profile. Fill it in once.";
+  const known = hasProfile(p);
+  const ask = $("#orgAsk"), box = $("#orgKnown");
+  if (ask) ask.hidden = known;
+  if (box) box.hidden = !known;
+  if (!known) return;
+  $("#orgSummary").innerHTML = row("Organization", p.name) + row("Status", p.status)
+    + row("Budget", money(p.budget)) + row("Staff FTE", p.staff)
+    + row("Geography", p.geo) + row("Serves", p.pop);
+  $("#orgHint").textContent = "Scored against this profile. Open the full profile to correct anything.";
   $("#orgChips").innerHTML = CAPS.map(([k,lab]) =>
     '<span class="chip' + (p.caps.includes(k) ? " on" : "") + '">' + esc(lab) + '</span>').join("");
 }
+
 function showView(which){
   [["read","#v-read"],["org","#v-org"],["runs","#v-runs"]].forEach(([k,sel]) => {
     $(sel).hidden = k !== which;
@@ -1012,6 +1167,7 @@ function wireResult(){
     setTimeout(() => ex.textContent = "Export brief", 2200);
   });
   if (sv) sv.addEventListener("click", async () => {
+    if (state.result.pending){ sv.textContent = "Still writing"; setTimeout(() => sv.textContent = "Save run", 2200); return; }
     if (state.example){ sv.textContent = "Example only"; setTimeout(() => sv.textContent = "Save run", 2200); return; }
     const { raw, s } = state.result, r = raw.rfp || {};
     const run = { id:Date.now(), when:new Date().toISOString().slice(0,10), program:r.program||"Untitled",
@@ -1056,6 +1212,16 @@ function rain(){
 
 /* ======================= BOOT ======================= */
 function boot(){
+  try { bootInner(); } catch(e){ bootFailed(e); }
+}
+function bootFailed(e){
+  const box = document.getElementById("result");
+  if (box) box.innerHTML = '<section><div class="deed" style="border-left:6px solid var(--crit)">'
+    + '<div class="deed-body"><p class="lbl" style="color:var(--crit)">This page hit an error while starting</p>'
+    + '<p style="font-size:13px;margin:6px 0 0">' + esc(e && e.message || e) + '</p></div></div></section>';
+  try { console.error(e); } catch(_){}
+}
+function bootInner(){
   $("#capChips").innerHTML = CAPS.map(([k,lab]) =>
     '<button type="button" class="chip" data-cap="' + k + '" aria-pressed="false">' + esc(lab) + '</button>').join("");
   $("#capChips").addEventListener("click", e => {
@@ -1066,7 +1232,8 @@ function boot(){
 
   ["read","org","runs"].forEach(k => $("#tab-"+k).addEventListener("click", () => showView(k)));
   $("#editOrg").addEventListener("click", () => showView("org"));
-  $("#runBtn").addEventListener("click", runAnalysis);
+  $("#runBtn").addEventListener("click", runRead);
+  $("#stopBtn").addEventListener("click", () => { if (RUN){ RUN.stopped = true; RUN.abort(); } });
   $("#extractBtn").addEventListener("click", runExtract);
   $("#saveOrg").addEventListener("click", async () => {
     state.profile = readOrgForm();
@@ -1083,9 +1250,9 @@ function boot(){
   $("#loadSample").addEventListener("click", () => {
     $("#rfpText").value = EX_RFP_TEXT; $("#rfpFunder").value = EX_RAW.rfp.funder;
     state.example = true;
-    state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE) };
+    state.result = { raw:EX_RAW, s:computeScore(EX_RAW, EX_PROFILE), pending:false };
     renderResult();
-    setStatus("#status", "Example loaded. Read it again to score this text against your own profile.");
+    setStatus("#status", "Example loaded. Press Read it to score this text against your own organization.");
   });
 
   const t = LS.get("theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
@@ -1111,6 +1278,5 @@ function boot(){
     renderLibrary();
   })();
 }
-window.claude = window.claude || {};
 boot();
 </script>
